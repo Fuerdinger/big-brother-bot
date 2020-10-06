@@ -27,6 +27,9 @@ const client = new Discord.Client();
 
 class BigBrotherManager
 {
+    //big brother manager contains an array of servers (aka server list)
+    servers = [];
+
     constructor()
     {
         // when the client is ready, run this code
@@ -49,12 +52,13 @@ class BigBrotherManager
         client.login(token);
     }
 
-    addServerToList()
+    // Assuming newServer is an instance of Server
+    addServerToList(newServer)
     {
-
+        this.servers.push(newServer);
     }
     
-    //big brother manager contains an array of servers (aka server list)
+
 }
 
 module.exports = {BigBrotherManager};

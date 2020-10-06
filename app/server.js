@@ -3,6 +3,7 @@
 //use txt.TextChannel and usr.User to get the respective classes
 //as well as txt.ChannelMessage and usr.UserMessage
 
+
 var txt = require("./textchannel.js");
 var usr = require("./user.js");
 
@@ -13,11 +14,18 @@ class Server
     timeWhenBotWasAddedToServer = 0;
     //you'll need some to way serialize this stuff  
 
+    constructor(serverName, serverID, timeWhenBotWasAddedToServer) {
+        this.serverName = serverName;
+        this.serverID = serverID;
+        this.timeWhenBotWasAddedToServer = timeWhenBotWasAddedToServer;
+    }
+    
 
     addTextChannelToList()
     {
 
     }
+
     addUserToList()
     {
 

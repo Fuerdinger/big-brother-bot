@@ -1,3 +1,4 @@
+const { assert } = require("console");
 //corey
 
 //use txt.TextChannel and usr.User to get the respective classes
@@ -6,9 +7,7 @@
 var fs = require("fs");
 
 const { TextChannel, ChannelMessage } = require("./textchannel.js");
-var txt = require("./textchannel.js");
 const { User } = require("./user.js");
-var usr = require("./user.js");
 
 var dataLocation = "../data/servers";
 
@@ -20,8 +19,8 @@ class Server
     serverID = 0;
     timeWhenBotWasAddedToServer = 0;
 
-    textChannels = [];
-    users = [];
+    textChannels;
+    users;
 
     //initializes the server given the server name and ID(discord.guild has a unique ID already generated)
     constructor(serverName, serverID) {
@@ -29,108 +28,90 @@ class Server
         this.timeWhenBotWasAddedToServer = 0 + new Date(); //time in milliseconds
         this.serverID = serverID;
 
-        this.textChannels = [];
-        this.users = [];
+        this.textChannels = new Map();
+        this.users = new Map();
 
         //also creates directories for server/textchannels/users upon initialization
         serverLocation = dataLocation + this.serverName;
-        fs.mkdir(serverLocation);
-        fs.mkdir(serverLocation + "/textchannels");
-        fs.mkdir(serverLocation + "/users");
-        
+        fs.mkdirSync(serverLocation);
+        fs.mkdirSync(serverLocation + "/textchannels");
+        fs.mkdirSync(serverLocation + "/users");
     }
 
     //adds new textchannel to local list
     addTextChannelToList(channelName, channelID, channelCreationTime = 0)
     {
-        channel = new TextChannel(this.serverName, channelName, channelID, channelCreationTime);
-        this.textChannels.push(channel);
+        this.textChannels[channelID] = new TextChannel(this.serverName, channelName, channelID, channelCreationTime);
     }
 
     //adds new user to local list
     addUserToList(userName, userID, userJoinTime = 0)
     {
-        user = new User(this.serverName, userName, userID, userJoinTime);
-        this.users.push(user);
+        this.users[userID] = new User(this.serverName, userName, userID, userJoinTime);
     }
 
     getChannelMessages(channelID)
-    {
-        for(i = 0; i < this.textChannels.length; i++) {
-            if(this.textChannels[i].channelID == channelID) {
-                return this.textChannels[i].serializeChatLogFromDisk();
-            }
-        }
-
-        //should not happen
-        return -1;
+    {   
+        assert(this.textChannels.has(channelID) == true);
+        return this.textChannels[channelID].serializeChatLogFromDisk();
     }
 
     getUserMessages(userID)
     {
-        for(i = 0; i < this.textChannels.length; i++) {
-            if(this.users[i].userID == userID) {
-                return this.users[i].serializeChatLogFromDisk();
-            }
-        }
-
-        //should not happen
-        return -1;
+        assert(this.users.has(usedID) == true);
+        return this.users[userID].serializeChatLogFromDisk();
     }
 
-    //updates a specific channel
-    //how this is done is yet to be specified
-    updateChannel(channelID, messages, userIDs, timesPosted)
+    //writes a single text channel message to cache(local memory)
+    cacheTextChannelMessage(channelID, message, userID, timePosted)
     {
-        channelMessages = this.generateChannelMessages(messages, userIDs, timesPosted);
-
-        for(i = 0; i < this.textChannels.length; i++) {
-            if(this.textChannels[i].channelID == channelID) {
-                //write to proper textchannel
-            }
-        }
+        newMessage = this.generateChannelMessage(message, userID, timePosted);
+        this.textChannels[channelID].recordMessage(newMessage);
     }
 
-    //updates a specific user
-    updateUser(userID, messages, channels, timesPosted)
+    //writes a single user message to cache
+    cacheUserMessage(userID, message, channelID, timePosted)
     {
-        channelMessages = this.generateUserMessages(messages, channels, timesPosted);
+        newMessage = this.generateUserMessage(message, channelID, timePosted);
+        this.users[userID].recordMessage(newMessage);
+    }
+    
+    allMessagesToMemory()
+    {
+        this.allChannelMessagesToMemory();
+        this.allUserMessagesToMemory();
+    }
 
-        for(i = 0; i < this.textChannels.length; i++) {
-            if(this.users[i].userID == userID) {
-                //write to proper user
-            }
+    allChannelMessagesToMemory()
+    {
+        for(let channelID of this.textChannels.keys()) {
+            this.channelMessagesToMemory(channelID);
         }
     }
 
-    //private method to generate ChannelMessages from a list of data
-    generateChannelMessages(messages, userIDs, timesPosted)
+    allUserMessagesToMemory()
     {
-        channelMessages = [];
-
-        for(i = 0; i < messages.length; i++) {
-            channelMessages.push(this.generateChannelMessage(messages[i], userIDs[i], timesPosted[i]));
+        for(let userID of this.users.keys()) {
+            this.userMessagesToMemory(userID);
         }
+    }
 
-        return channelMessages;
+    //writes all cached messages to permanent memory for a textchannel
+    channelMessagesToMemory(channelID)
+    {
+        textChannels[channelID].serializeChatLogToDisk();
+    }
+
+    //writes all cached messages to permanent memory for a user
+    userMessagesToMemory(userID)
+    {
+        users[userID].serializeChatLogToDisk();
     }
 
     //private method to generate a ChannelMessage from data
     generateChannelMessage(message, userID, timePosted)
     {
         return new ChannelMessage(message, userID, timePosted);
-    }
-
-    //private method to generate UserMessages from a list of data
-    generateUserMessages(messages, channels, timesPosted)
-    {
-        userMessages = [];
-
-        for(i = 0; i < messages.length; i++) {
-            channelMessages.push(this.generateUserMessage(messages[i], channels[i], timesPosted[i]));
-        }
-
-        return userMessages;
     }
     
     //private method to generate a UserMessage from data

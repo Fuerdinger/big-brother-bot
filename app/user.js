@@ -6,8 +6,8 @@ var IO = new srlz.IO();
 class UserMessage
 {
     message = "";
-    channel = "";
-    timePosted = "";
+    channelID = "";
+    timePosted = null; //this is supposed a Javascript 'Date' type
 }
 
 class User

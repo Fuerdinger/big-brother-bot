@@ -32,10 +32,11 @@ class Server
         this.users = new Map();
 
         //also creates directories for server/textchannels/users upon initialization
+        /*
         serverLocation = dataLocation + this.serverName;
         fs.mkdirSync(serverLocation);
         fs.mkdirSync(serverLocation + "/textchannels");
-        fs.mkdirSync(serverLocation + "/users");
+        fs.mkdirSync(serverLocation + "/users"); */
     }
 
     //adds new textchannel to local list

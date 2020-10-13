@@ -22,6 +22,7 @@ string for the name of the text channel it was posted in
 //use serv.Server to get the Server class
 var serv = require('./server.js');
 
+
 // require the discord.js module
 const Discord = require('discord.js');
 const { prefix, token } = require('../data/util/config.json');
@@ -33,36 +34,27 @@ const us = require('./user.js');
 const srv = require('./server.js');
 const txt = require('./textchannel.js');
 
+var fs = require('fs');
 
+var data = JSON.parse(fs.readFileSync('./data/bigbrother.json', 'utf8'));
 
 class BigBrotherManager
 {
-    //big brother manager contains an array of servers (aka server list)
-    /*  Problems: 
-         1. servers[] is empty/undefined everytime the server is start, should find a way to inialize servers[]
-         2. err: serverLocation is undefined
-         3. can be fixed by setting serLocation as the class variable and use 'this.serverLocation' but
-         4. fs.mkdirSync(serverLocation); gives an error */
-        
-    servers = [];
 
     constructor()
     {
+        var servers = data.map(s => s);
+        var serversSize = Object.keys(servers).length;
 
 
         client.once('ready', () => {
             console.log('Ready!');
         });
 
-        
         client.on('message', message =>
         {
-            /*
-            message.channel.send("server name: " + message.guild.name);
-            message.channel.send("server id: " + message.guild.id);
-            message.channel.send("channel: " + message.channel.name);
-            message.channel.send("user: " + message.member.user.tag);
-            */
+            var txtchannel = new txt.TextChannel(message.guild.name, message.channel.name, message.channel.id, message.channel.createdTimestamp);
+            txtchannel.recordMessage(message);
         });
 
         /************ SERVERS ************/
@@ -73,48 +65,44 @@ class BigBrotherManager
 
         client.on("guildDelete", function(guild) {
             let server = new srv.Server(guild.name, guild.id);
-            for (let i = 0; i < servers.length; i++) {
+            for (let i = 0; i < this.servers.length; i++) {
                 if (server.id = guild.id) {
-                    array.splice(i, 1);
+                    serversay.splice(i, 1);
                 }
             }
-        });
-        /* if server is already created, call existing server
-        for (var i = 0; i < this.servers.length; i++) {
-            if (message.server.name == this.servers[i].name) {
-                currentServer = this.servers[i];
-            }
-        } */
-        
+        });        
 
         /************ USERS ************/
         client.on("guildMemberAdd", function(member){
-            /* Create new user instance */
-            let newUser = new us.User(member.guild.name, member.user, member.user.id, member.joinedTimestamp);
-
             /* Add users to servers list */
-            let thisServer = servers.find(server => server.id == member.guild.id);
+            let thisServer = this.servers.find(server => server.id == member.guild.id);
             thisServer.addUserToList(member.user.name, member.user.id, member.joinedTimestamp);
 
-            // console.log(`${newUser.name} joined ${thisServer.name}`);
         });
 
         /************ TEXT CHANNELS ************/
         client.on("channelCreate", function(channel) 
         {
-            /* To bypass undefined servers[] error
-            let servers1 = [];
-            let newServer = new srv.Server(channel.guild.name, channel.guild.id);
-            servers1.push(newServer); */
+            // console.log(typeof(servers[0]));
+            // console.log(channel.guild.id);
+            let server = null;
+            server = servers.find(server => server.serverID == channel.guild.id);
 
             /* Add channel to servers list */
-            let thisServer = servers.find(server => server.id == channel.guild.id);
+            for (var x = 0; x < serversSize; x++) {
+                if (server != null) {
+                    server.channels.push(channel.name);
+                    break;
+                }
+            }
+
+            let bigbrother = JSON.stringify(servers);
+            fs.writeFileSync('./data/bigbrother.json', bigbrother);
+
+            let thisServer = new srv.Server(channel.guild.name, channel.guild.id);
+
             thisServer.addTextChannelToList(channel.name, channel.id, channel.createdTimestamp);
 
-            // console.log(`channelCreate: ${channel.name} (${channel.id}) in ${channel.guild.name}`);
-            console.log(thisServer.serverName);
-            console.log(thisServer.serverID);
-            console.log(thisServer.textChannels);
         });
 
         // login to Discord with your app's token

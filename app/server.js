@@ -64,6 +64,10 @@ class Server
         return this.users[userID].serializeChatLogFromDisk();
     }
 
+    //the "cache" functions which are called by big brother manager should return strings
+    //the strings should be outputted to the appropriate channel by big brother manager, if the returned strings are not empty
+
+
     //writes a single text channel message to cache(local memory)
     cacheTextChannelMessage(channelID, message, userID, timePosted)
     {

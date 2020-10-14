@@ -13,6 +13,8 @@ var dataLocation = "../data/servers";
 
 //generates a server object based on the server name
 
+//server must hold a UI instance; when receving a new message, if it begins with !bb, it should be passed to the UI class rather than being recorded
+
 class Server
 {
     serverName = "";

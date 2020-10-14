@@ -40,6 +40,15 @@ class Server
         fs.mkdirSync(serverLocation + "/users");
     }
 
+
+    
+    //this function should be called by big brother manager, and should return a string which the big brother manager may have to output
+    //the strings should be outputted to the appropriate channel by big brother manager, if the returned strings are not empty
+    receiveMessage(message, channelID, userID, timePosted)
+    {
+
+    }
+
     //adds new textchannel to local list
     addTextChannelToList(channelName, channelID, channelCreationTime = 0)
     {
@@ -63,10 +72,6 @@ class Server
         assert(this.users.has(usedID) == true);
         return this.users[userID].serializeChatLogFromDisk();
     }
-
-    //the "cache" functions which are called by big brother manager should return strings
-    //the strings should be outputted to the appropriate channel by big brother manager, if the returned strings are not empty
-
 
     //writes a single text channel message to cache(local memory)
     cacheTextChannelMessage(channelID, message, userID, timePosted)

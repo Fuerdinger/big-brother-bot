@@ -22,6 +22,7 @@ string for the name of the text channel it was posted in
 //use serv.Server to get the Server class
 var serv = require('./server.js');
 
+
 // require the discord.js module
 const Discord = require('discord.js');
 const { prefix, token } = require('../data/util/config.json');
@@ -29,64 +30,82 @@ const { prefix, token } = require('../data/util/config.json');
 // create a new Discord client
 const client = new Discord.Client();
 
+const us = require('./user.js');
+const srv = require('./server.js');
+const txt = require('./textchannel.js');
+
+var fs = require('fs');
+
+var data = JSON.parse(fs.readFileSync('./data/bigbrother.json', 'utf8'));
 
 class BigBrotherManager
 {
-    //big brother manager contains an array of servers (aka server list)
-    servers = [];
 
     constructor()
     {
-        // when the client is ready, run this code
-        // this event will only trigger one time after logging in
+        var servers = data.map(s => s);
+        var serversSize = Object.keys(servers).length;
+
+
         client.once('ready', () => {
             console.log('Ready!');
         });
 
-        /// if server is already created, call existing server
-        /// use map.
-        for (var i = 0; i < this.servers.length; i++) {
-            if (message.server.name == this.servers[i].name) {
-                currentServer = this.servers[i];
-            }
-        }
-
-        // see if server is already a client
-        client.on()
-        {
-            /// if server not already created, create new server
-            if (currentServer == null) {
-                currentServer = new Server(message.server.name);
-                this.servers.push(currentServer);
-                // 
-            }
-        }
-
-        /// callback for when a new user joins
-
-        /// callback for when a new text channel is created
-
         client.on('message', message =>
         {
-            // console.log(message.content);
-            // if (message.content === `${prefix}ping`) {
-            //     // send back "Pong." to the channel the message was sent in
-            //     message.channel.send('Pong.');
-            // }
-            
-            /// add new text message to server
+            var txtchannel = new txt.TextChannel(message.guild.name, message.channel.name, message.channel.id, message.channel.createdTimestamp);
+            txtchannel.recordMessage(message);
+        });
 
-            /// calllback for when a new message is inputted
-            
-            
-            /// these callbacks will pass data to a server.js object
-            /// server.js object will pass data to user.js object and textchanell.js object
+        /************ SERVERS ************/
+        client.on("guildCreate", function(guild) {
+            let newServer = new srv.Server(guild.name, guild.id);
+            servers.add(newServer);
+        });
+
+        client.on("guildDelete", function(guild) {
+            let server = new srv.Server(guild.name, guild.id);
+            for (let i = 0; i < this.servers.length; i++) {
+                if (server.id = guild.id) {
+                    serversay.splice(i, 1);
+                }
+            }
+        });        
+
+        /************ USERS ************/
+        client.on("guildMemberAdd", function(member){
+            /* Add users to servers list */
+            let thisServer = this.servers.find(server => server.id == member.guild.id);
+            thisServer.addUserToList(member.user.name, member.user.id, member.joinedTimestamp);
 
         });
 
+        /************ TEXT CHANNELS ************/
+        client.on("channelCreate", function(channel) 
+        {
+            // console.log(typeof(servers[0]));
+            // console.log(channel.guild.id);
+            let server = null;
+            server = servers.find(server => server.serverID == channel.guild.id);
+
+            /* Add channel to servers list */
+            for (var x = 0; x < serversSize; x++) {
+                if (server != null) {
+                    server.channels.push(channel.name);
+                    break;
+                }
+            }
+
+            let bigbrother = JSON.stringify(servers);
+            fs.writeFileSync('./data/bigbrother.json', bigbrother);
+
+            let thisServer = new srv.Server(channel.guild.name, channel.guild.id);
+
+            thisServer.addTextChannelToList(channel.name, channel.id, channel.createdTimestamp);
+
+        });
 
         // login to Discord with your app's token
-        
         client.login(token);
     }
 

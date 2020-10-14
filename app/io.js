@@ -2,14 +2,16 @@ var fs = require('fs');
 
 class IO
 {
+    serversPath = __dirname + '/../data/servers/';
     constructor(){}
+    
     exists(serverName, localName)
     {
-        return fs.existsSync(__dirname + '/../data/servers/'+serverName+'/'+localName+'.json');
+        return fs.existsSync(this.serversPath+serverName+'/'+localName+'.json');
     }
     openFile(serverName, localName, flag)
     {
-        return fs.openSync(__dirname + '/../data/servers/'+serverName+'/'+localName+'.json', flag);
+        return fs.openSync(this.serversPath+serverName+'/'+localName+'.json', flag);
     }
     writeToFile(fd, json, flag)
     {
@@ -22,6 +24,14 @@ class IO
     closeFile(fd)
     {
         fs.closeSync(fd);
+    }
+    makeDir(dirName)
+    {
+        return fs.mkdirSync(this.serversPath+dirName);
+    }
+    getFilesInDir(serverName, localName)
+    {
+        return fs.readdirSync(this.serversPath+serverName+'/'+localName);
     }
 }
 

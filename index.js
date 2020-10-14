@@ -5,7 +5,7 @@ var BigBrother = new bb.BigBrotherManager();
 
 
 
-/*  Testing code for user.js and textchannel.js
+/* Testing code for user.js and textchannel.js */
 var us = require('./app/user.js');
 var txt = require('./app/textchannel.js');
 
@@ -24,4 +24,5 @@ TxtChnnl1.serializeMessages();
 
 Usr1.destructor();
 TxtChnnl1.destructor();
-*/
+
+

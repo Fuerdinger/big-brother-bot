@@ -8,8 +8,10 @@ var fs = require("fs");
 
 const { TextChannel, ChannelMessage } = require("./textchannel.js");
 const { User } = require("./user.js");
+var srlz = require("./io.js");
+var IO = new srlz.IO();
 
-var dataLocation = "../data/servers";
+//var dataLocation = path.normalize(__dirname + "/../data/servers");
 
 //generates a server object based on the server name
 
@@ -17,27 +19,50 @@ var dataLocation = "../data/servers";
 
 class Server
 {
-    serverName = "";
-    serverID = 0;
-    timeWhenBotWasAddedToServer = 0;
+    json = {};
+    fd = 0;
 
     textChannels;
     users;
 
     //initializes the server given the server name and ID(discord.guild has a unique ID already generated)
-    constructor(serverName, serverID) {
-        this.serverName = serverName;
-        this.timeWhenBotWasAddedToServer = 0 + new Date(); //time in milliseconds
-        this.serverID = serverID;
+    //will need to overload function to detect server objects created without params
+    constructor(serverName, serverID, timeBotWasAdded) {
+        this.json["serverName"] = serverName;
+        this.fd = 0;
 
         this.textChannels = new Map();
         this.users = new Map();
 
-        //also creates directories for server/textchannels/users upon initialization
-        serverLocation = dataLocation + this.serverName;
-        fs.mkdirSync(serverLocation);
-        fs.mkdirSync(serverLocation + "/textchannels");
-        fs.mkdirSync(serverLocation + "/users");
+        if(serverID == null && timeBotWasAdded == null
+                || IO.exists(this.json["serverName"], this.json["serverName"])) //already exists
+        {
+            this.serializeMetadataFromDisk();
+
+            //populate local list of existing textchannels/users
+            //channelfiles = IO.getFilesInDir(this.json["serverName"], "textchannels");
+            IO.getFilesInDir(this.json["serverName"], "textchannels").forEach(file => {
+                var splitFile = file.split('.');
+                this.addTextChannelToList(splitFile[0]);
+            });
+
+            IO.getFilesInDir(this.json["serverName"], "users").forEach(file => {
+                var splitFile = file.split('.');
+                this.addUserToList(splitFile[0]);
+            });
+        }
+        else //new server
+        {
+            this.json["serverName"] = serverName;
+            this.json["timeBotWasAdded"] = timeBotWasAdded;
+            this.json["serverID"] = serverID;
+
+            IO.makeDir(this.json["serverName"]);
+            IO.makeDir(this.json["serverName"] + "/textchannels");
+            IO.makeDir(this.json["serverName"] + "/users");
+
+            this.serializeMetadataToDisk();
+        }
     }
 
 
@@ -50,43 +75,50 @@ class Server
     }
 
     //adds new textchannel to local list
-    addTextChannelToList(channelName, channelID, channelCreationTime = 0)
+    addTextChannelToList(channelName, channelID=null, channelCreationTime=null)
     {
-        this.textChannels[channelID] = new TextChannel(this.serverName, channelName, channelID, channelCreationTime);
+        this.textChannels.set(channelName, new TextChannel(this.json["serverName"], channelName, channelID, channelCreationTime));
     }
 
     //adds new user to local list
-    addUserToList(userName, userID, userJoinTime = 0)
+    addUserToList(userName, userID=null, userJoinTime=null)
     {
-        this.users[userID] = new User(this.serverName, userName, userID, userJoinTime);
+        this.users.set(userName, new User(this.json["serverName"], userName, userID, userJoinTime));
     }
 
-    getChannelMessages(channelID)
+    getChannelMessages(channelName)
     {   
-        assert(this.textChannels.has(channelID) == true);
-        return this.textChannels[channelID].serializeChatLogFromDisk();
+        assert(this.textChannels.has(channelName) == true);
+        return this.textChannels.get(channelName).json["messages"];
     }
-
-    getUserMessages(userID)
+    
+    getUserMessages(userName)
     {
-        assert(this.users.has(usedID) == true);
-        return this.users[userID].serializeChatLogFromDisk();
+        assert(this.users.has(userName) == true);
+        return this.users.get(userName).json["messages"];
     }
 
     //writes a single text channel message to cache(local memory)
     cacheTextChannelMessage(channelID, message, userID, timePosted)
     {
-        newMessage = this.generateChannelMessage(message, userID, timePosted);
-        this.textChannels[channelID].recordMessage(newMessage);
+        //var newMessage = this.generateChannelMessage(message, userID, timePosted);
+        var newMessage = {message: message, channel: userID, timePosted: timePosted};
+        this.textChannels.get(channelID).recordMessage(newMessage);
     }
 
     //writes a single user message to cache
     cacheUserMessage(userID, message, channelID, timePosted)
     {
-        newMessage = this.generateUserMessage(message, channelID, timePosted);
-        this.users[userID].recordMessage(newMessage);
+        //var newMessage = this.generateUserMessage(message, channelID, timePosted);
+        var newMessage = {message: message, channel: channelID, timePosted: timePosted};
+        this.users.get(userID).recordMessage(newMessage);
     }
-    
+
+    channelMessagesFromMemory(userID)
+    {
+        return 0;
+    }
+
     allMessagesToMemory()
     {
         this.allChannelMessagesToMemory();
@@ -110,13 +142,13 @@ class Server
     //writes all cached messages to permanent memory for a textchannel
     channelMessagesToMemory(channelID)
     {
-        textChannels[channelID].serializeChatLogToDisk();
+        this.textChannels.get(channelID).serializeChatLogToDisk();
     }
 
     //writes all cached messages to permanent memory for a user
     userMessagesToMemory(userID)
     {
-        users[userID].serializeChatLogToDisk();
+        this.users.get(userID).serializeChatLogToDisk();
     }
 
     //private method to generate a ChannelMessage from data
@@ -129,6 +161,26 @@ class Server
     generateUserMessage(message, channel, timePosted)
     {
         return new UserMessage(message, channel, timePosted);
+    }
+
+    //server logging functions for metadata
+    serializeMetadataFromDisk()
+    {
+        assert(this.fd == 0); //when this function is called, fd should be 0
+        this.fd = IO.openFile(this.json["serverName"], this.json["serverName"], "r");
+        var data = IO.readFromFile(this.fd, "r");
+        this.json = JSON.parse(data);
+        this.fd = 0;
+    }
+
+    serializeMetadataToDisk()
+    {
+        assert(this.fd == 0);
+        
+        this.fd = IO.openFile(this.json["serverName"], this.json["serverName"], "w");
+        IO.writeToFile(this.fd, this.json, "w");
+        IO.closeFile(this.fd);
+        this.fd = 0;
     }
 }
 

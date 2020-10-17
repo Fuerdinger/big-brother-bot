@@ -27,7 +27,7 @@ class Server
 
     //initializes the server given the server name and ID(discord.guild has a unique ID already generated)
     //will need to overload function to detect server objects created without params
-    constructor(serverName, serverID, timeBotWasAdded) {
+    constructor(apiGuildObj, serverName, serverID, timeBotWasAdded) {
         this.json["serverName"] = serverName;
         this.fd = 0;
 
@@ -61,6 +61,9 @@ class Server
             IO.makeDir(this.json["serverName"] + "/textchannels");
             IO.makeDir(this.json["serverName"] + "/users");
 
+            apiGuildObj.channels.cache.each(channel => this.addTextChannelToList(channel.name, channel.id, channel.createdTimestamp));
+            apiGuildObj.members.cache.each(member => this.addUserToList(member.user.username, member.user.id, member.joinedTimestamp));
+
             this.serializeMetadataToDisk();
         }
     }
@@ -71,7 +74,7 @@ class Server
     //the strings should be outputted to the appropriate channel by big brother manager, if the returned strings are not empty
     receiveMessage(message, channelID, userID, timePosted)
     {
-
+        return "";
     }
 
     //adds new textchannel to local list

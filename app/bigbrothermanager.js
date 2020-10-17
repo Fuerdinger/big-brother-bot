@@ -20,19 +20,15 @@ string for the name of the text channel it was posted in
 // server.js object will pass data to user.js object and textchanell.js object
 
 //use serv.Server to get the Server class
-var serv = require('./server.js');
-
 
 // require the discord.js module
 const Discord = require('discord.js');
-const { prefix, token } = require('../data/util/config.json');
+const { prefix, token, clientID } = require('../data/util/config.json');
 
 // create a new Discord client
 const client = new Discord.Client();
 
-const us = require('./user.js');
 const srv = require('./server.js');
-const txt = require('./textchannel.js');
 
 var fs = require('fs');
 
@@ -50,7 +46,7 @@ class BigBrotherManager
 
         // create a new server for each index
         for (var i = 0; i < serverstr.length; i++) {
-            var server = new serv.Server(serverstr[i].json.serverName, serverstr[i].json.serverID, serverstr[i].json.timeBotWasAdded);
+            var server = new srv.Server(null, serverstr[i].json.serverName, serverstr[i].json.serverID, serverstr[i].json.timeBotWasAdded);
             console.log(server);
 
             this.servers.push(server);
@@ -68,14 +64,25 @@ class BigBrotherManager
             var today = new Date();
             var server = '';
 
+            //if the message was posted by big brother manager
+            if (message.member.user.id === clientID)
+            {
+                return;
+            }
+
             // add message to Server - server.receiveMessage(message, channel.id, user.id, );
             for (var i = 0; i < this.servers.length; i++) {
-                if (servers[i].serverID == message.guild.id) {
-                    server = servers[i];
+                if (this.servers[i].json.serverID == message.guild.id) {
+                    server = this.servers[i];
                 }
             }
             if (server != '') {
-                server.catcherUserMessage(message.member.id, message, message.channel.id, today);
+                var msg = server.receiveMessage(message.content, message.channel.id, message.member.user.id, message.createdTimestamp);
+                if (!(msg === ""))
+                {
+                    message.channel.send(msg);
+                }
+                //server.cacheUserMessage(message.member.id, message, message.channel.id, today);
             }
         
 
@@ -88,8 +95,9 @@ class BigBrotherManager
 
         /************ SERVERS ************/
         client.on('guildCreate', guild => {
-            let newServer = new srv.Server(guild.name, guild.id);
-            this.servers.add(newServer);
+            var today = new Date();
+            let newServer = new srv.Server(guild, guild.name, guild.id, today);
+            this.addServerToList(newServer);
         });
 
 
@@ -108,7 +116,7 @@ class BigBrotherManager
         {
             /* Add users to servers list */
             let thisServer = this.servers.find(server => server.id == member.guild.id);
-            thisServer.addUserToList(member.user.name, member.user.id, member.joinedTimestamp);
+            thisServer.addUserToList(member.user.username, member.user.id, member.joinedTimestamp);
         });
         // client.on("guildMemberRemove", member => 
         // {
@@ -158,6 +166,8 @@ class BigBrotherManager
     addServerToList(newServer)
     {
         this.servers.push(newServer);
+        let bigbrother = JSON.stringify(this.servers);
+        fs.writeFileSync('./data/bigbrother.json', bigbrother);
     }
     
 

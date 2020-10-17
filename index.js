@@ -1,7 +1,9 @@
 var bb = require('./app/bigbrothermanager.js');
 var BigBrother = new bb.BigBrotherManager();
 
+//const {UI} = require("./app/ui.js");
 
+//var myUI = new UI();
 
 
 /*  Testing code for server.js

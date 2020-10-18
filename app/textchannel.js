@@ -18,6 +18,12 @@ class TextChannel
     channelID = 0;
     channelCreationTime = "";
 
+    getServerName(){return this.serverName;}
+    getChannelName(){return this.channelName;}
+    getChannelID(){return this.channelID;}
+    getChannelCreationTime(){return this.channelCreationTime;}
+    getMessagesInChannel(){return this.json.messages.length;}
+
     json = {};
     fd = 0;
 

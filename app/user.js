@@ -17,6 +17,12 @@ class User
     userID = 0;
     userJoinTime = "";
 
+    getServerName(){return this.serverName;}
+    getUserName(){return this.userName;}
+    getUserID(){return this.userID;}
+    getUserJoinTime(){return this.userJoinTime;}
+    getNumMessagesTotal(){return this.json.messages.length;}
+
     //the memory representation of the json file
     json = {};
     //the file

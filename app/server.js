@@ -9,6 +9,7 @@ var fs = require("fs");
 const { TextChannel, ChannelMessage } = require("./textchannel.js");
 const { User } = require("./user.js");
 var srlz = require("./io.js");
+const { UI } = require("./ui.js");
 var IO = new srlz.IO();
 
 //var dataLocation = path.normalize(__dirname + "/../data/servers");
@@ -25,6 +26,21 @@ class Server
     textChannels;
     users;
 
+    ui = null;
+
+    getServerName(){return this.json.serverName;}
+    getTimeBotWasAdded(){return this.json.timeBotWasAdded;}
+    getNumMessagesInServer()
+    {
+        var ret = 0;
+        for (const [key, value] of this.textChannels)
+        {
+            ret += value.json.messages.length;
+        }
+        return ret;
+    }
+    getNumUsersInServer(){return this.users.size;}
+
     //initializes the server given the server name and ID(discord.guild has a unique ID already generated)
     //will need to overload function to detect server objects created without params
     constructor(apiGuildObj, serverName, serverID, timeBotWasAdded) {
@@ -33,6 +49,7 @@ class Server
 
         this.textChannels = new Map();
         this.users = new Map();
+        this.ui = new UI(this);
 
         if(serverID == null && timeBotWasAdded == null
                 || IO.exists(this.json["serverName"], this.json["serverName"])) //already exists
@@ -74,7 +91,7 @@ class Server
     //the strings should be outputted to the appropriate channel by big brother manager, if the returned strings are not empty
     receiveMessage(message, channelID, userID, timePosted)
     {
-        return "";
+        return this.ui.passInMessage(null, message)
     }
 
     //adds new textchannel to local list

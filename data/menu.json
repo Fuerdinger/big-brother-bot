@@ -1,0 +1,105 @@
+{
+    "menu":
+    {
+        "0": 
+        {
+            "header": "What do you want to do?",
+            "options":
+            [
+                {"option": "Show me data for a user.", "goto": "getUser"},
+                {"option": "Show me data for a channel.", "goto": "getChannel"},
+                {"option": "Show me data for the whole server.", "goto": "serverMenu"},
+                {"option": "Exit.", "goto": "-1"}
+            ]
+        },
+
+        "exit":
+        {
+            "header": "Remember, I'm always watching!"
+        },
+
+        "getUser":
+        {
+            "header": "What is the user's username? (ex. JohnDoe#5231)",
+            "options":
+            [
+                {"option": "getString", "goto": "userMenu"}
+            ]
+        },
+
+        "getChannel":
+        {
+            "header": "What is the channel's name? (ex. general)",
+            "options":
+            [
+                {"option": "getString", "goto": "channelMenu"}
+            ]
+        },
+
+        "getWord":
+        {
+            "header": "What's the word?",
+            "options":
+            [
+                {"option": "getString"}
+            ]
+        },
+
+        "serverMenu":
+        {
+            "header": "Server name: %\nWhen Big Brother was added to server: %\nNumber of messages in server: %\nNumber of users in server: %",
+            "regex":
+            [
+                "ServerName", "TimeBotWasAdded", "NumMessagesInServer", "NumUsersInServer"
+            ],
+            "options":
+            [
+                {"option": "How many times has this word been used?", "run": "serverHowManyTimesWordUsed", "input": "getWord"},
+                {"option": "Which words are used the most?", "run": "serverMostUsedWords"},
+                {"option": "What is the most amount of posts made in a day?", "run": "serverMostAmountOfPostsMadeInDay"},
+                {"option": "What is the average amount of posts in a day?", "run": "serverAverageAmountOfPostsInDay"},
+                {"option": "Show me all messages where this word has been used.", "run": "serverAllMessagesWhereWordBeenUsed", "input": "getWord"},
+                {"option": "Show me the most recent messages.", "run": "serverMostRecentMessages"},
+                {"option": "Quit.", "goto": "0"}
+            ]
+        },
+
+        "channelMenu":
+        {
+            "header": "Channel name: %\nNumber of messages in channel: %\nChannel creation time: %",
+            "regex":
+            [
+                "ChannelName", "MessagesInChannel", "ChannelCreationTime"
+            ],
+            "options":
+            [
+                {"option": "How many times has this word been used?", "run": "channelHowManyTimesWordUsed", "input": "getWord"},
+                {"option": "Show me all messages where this word has been used.", "run": "channelAllMessagesWhereWordBeenUsed", "input": "getWord"},
+                {"option": "How often are posts made in this chat a day?", "run": "channelAveragePostsADay"},
+                {"option": "What is the most amount of posts made in this chat in a single day?", "run": "channelMostAmountOfPostsInADay"},
+                {"option": "Which words are used the most?", "run": "channelMostUsedWords"},
+                {"option": "Quit.", "goto": "0"}
+            ]
+        },
+
+        "userMenu":
+        {
+            "header": "Username: %\nNumber of messages they've made: %\nWhen they joined server: %",
+            "regex":
+            [
+                "UserName", "NumMessagesTotal", "UserJoinTime"
+            ],
+            "options":
+            [
+                {"option": "How many times have they used this word?", "run": "userHowManyTimesWordUsed", "input": "getWord"},
+                {"option": "How often do they post in a day?", "run": "userHowOftenPostInADay"},
+                {"option": "How many times have they been banned from the server?", "run": "userHowManyTimesBannedFromServer"},
+                {"option": "What is the most amount of posts they've made in a single day?", "run": "userMostAmountOfPostsInADay"},
+                {"option": "Show me all the messages where they've used this word.", "run": "userAllMessagesWhereWordWasUsed", "input": "getWord"},
+                {"option": "Show me their most recent messages.", "run": "userMostRecentMessages"},
+                {"option": "Which words does the user use the most?.", "run": "userMostUsedWords"},
+                {"option": "Quit.", "goto": "0"}
+            ]
+        }
+    }
+}

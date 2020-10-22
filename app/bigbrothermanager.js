@@ -46,7 +46,7 @@ class BigBrotherManager
 
         // create a new server for each index
         for (var i = 0; i < serverstr.length; i++) {
-            var server = new srv.Server(null, serverstr[i].json.serverName, serverstr[i].json.serverID, serverstr[i].json.timeBotWasAdded);
+            var server = new srv.Server(null, serverstr[i].serverName, serverstr[i].serverID, serverstr[i].timeBotWasAdded);
             console.log(server);
 
             this.servers.push(server);
@@ -166,7 +166,14 @@ class BigBrotherManager
     addServerToList(newServer)
     {
         this.servers.push(newServer);
-        let bigbrother = JSON.stringify(this.servers);
+
+        var tempJSON = [];
+        for (var i = 0; i < this.servers.length; i++)
+        {
+            tempJSON.push({"serverName": this.servers[i].json.serverName, "serverID": this.servers[i].json.serverID, "timeBotWasAdded": this.servers[i].json.timeBotWasAdded});
+        }
+
+        let bigbrother = JSON.stringify(tempJSON);
         fs.writeFileSync('./data/bigbrother.json', bigbrother);
     }
     

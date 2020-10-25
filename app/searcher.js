@@ -71,7 +71,7 @@ class Searcher
         var userDict = filterByUC(server, user, channel);
         userDict = this.wordSearchDict(userDict, word);
 
-        return "Number of messages made by " + this.resolveUserName(user) +
+        return "Number of messages from " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + ": " + this.countPosts(userDict);
     }
     //do the same thing as above, but instead of printing out the messages, prints out the number of messages
@@ -93,7 +93,7 @@ class Searcher
         var userDict = filterByUC(server, user, channel);
         userDict = this.postSearchByDayDict(userDict, day);
         
-        return "Number of messages made by " + this.resolveUserName(user) +
+        return "Number of messages from " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + 
                 " on " + day.toDateString() + ": " + userDict.length;
     }
@@ -127,6 +127,19 @@ class Searcher
     //complex due to potential pages, need further design specifications
     recentMessages(server, user)
     {
+        var numberOfMessagesToDisplay = 5;
+
+        var userDict = this.filterByUC(server, user, "*");
+        var sortedMessages = this.recentMessagesSort(userDict);
+        var retStr = "Most recent messages from " + this.resolveUserName(user) + ":\n";
+
+        for(var i = 0; i < numberOfMessagesToDisplay; i++)
+        {
+            retStr += "#" + (i + 1) + "\nMessage: " + sortedMessages[i].message + 
+                        "\nTime posted: " + sortedMessages[i].timePosted + 
+                        "\nChannel: " + sortedMessages[i].channelID;
+        }
+
         return "calling recentMessages";
     }
     //prints the most recent messages made by a user (do 10 for now)
@@ -134,11 +147,22 @@ class Searcher
 
     mostUsedWords(server, user, channel)
     {
-        return "calling mostUsedWords";
+        var userDict = this.filterByUC(server, user, channel);
+        var mostUsedWordsLists = this.mostUsedWordsDict(userDict);
+        var retStr = "Most used words from " + this.resolveUserName(user) + 
+                        " in " + this.resolveChannelName(channel) +
+                        ": \n";
+
+        for(var i = 0; i < mostUsedWordsLists[0].length; i++)
+        {
+            retStr += "#" + (i + 1) + "\nWord: " + mostUsedWordsLists[0][i] +
+                        "\nTimes used: " + mostUsedWordsLists[1][i] + "\n";
+        }
+
+        return retStr;
     }
     //prints out the most used words by a user for a channel
     //* can be passed in for user and channel
-
 
     /* Private functions */
 
@@ -150,14 +174,6 @@ class Searcher
         if(user === this.nullString)
         {
             userDict = server.getUsers();
-
-            /*
-            for(var userI in userDict.keys())
-            {
-                userDict[userI] = {};
-                userDict[userI].json["messages"] = server.getUserMessages(userI);
-            }
-            */
         }
         else
         {
@@ -174,14 +190,6 @@ class Searcher
         if(channel === this.nullString)
         {
             channelDict = server.getChannels();
-
-            /*
-            for(var channelI in channels.keys())
-            {
-                channelDict[channelI] = {};
-                channelDict[channelI].json["messages"] = server.getChannelMessages(channelI);
-            }
-            */
         }
         else
         {
@@ -190,7 +198,6 @@ class Searcher
 
         return channelDict;
     }
-
 
     resolveUserName(user)
     {
@@ -222,19 +229,119 @@ class Searcher
     {
         var formattedString = "";
 
-        for(var user of userDict.keys())
+        for(var userI in userDict.keys())
         {
-            for(var i = 0; i < userDict[user].json["messages"].length; i++)
+            for(var i = 0; i < userDict[userI].json["messages"].length; i++)
             {
                 formattedString += 
-                    "User: " + user + "\n" +
-                    "Channel: " + userDict[user].json["channelID"] +
-                    "Time Posted: " + userDict[user].json["timePosted"].toDateString(); + "\n" +
-                    "Message: " + userDict[user].json["messages"][i] + "\n";
+                    "User: " + userI + "\n" +
+                    "Channel: " + userDict[userI].json["channelID"] +
+                    "Time Posted: " + userDict[userI].json["timePosted"].toDateString(); + "\n" +
+                    "Message: " + userDict[userI].json["messages"][i] + "\n";
             }
         }
 
         return formattedString;
+    }
+
+    //sorts the messages by most recent
+    recentMessagesSort(userDict)
+    {
+        messages = [];
+
+        for(var userI in userDict.keys())
+        {
+            var user = userDict[userI];
+
+            //go through all messages
+            for(var i = 0; i < user["messages"].length; i++)
+            {
+                var messageDate = user["messages"][i].timePosted.getTime();
+
+                //find place in ordered list
+                for(var j = 0; j < messages.length; i++)
+                {
+                    if(messageDate < messages[j].timePosted.getTime())
+                    {
+                        //insert into list
+                        messages.splice(j, 0, user["messages"][i]);
+                    }
+                }
+            }
+        }
+
+        return messages;
+    }
+
+    //needs testing to verify alogrithm
+    //performs mostUsedWords but returns a list containing 5 most used words and number of times used
+    mostUsedWordsDict(userDict)
+    {
+        var maxCount = [0, 0, 0, 0, 0];
+        var lowestMax = 0;
+        var maxWord = ["", "", "", "", ""]; //list of words 
+        //dict containing the sum of all words in this userDict
+        //needed for when finding most used word in a channel
+        var wordDict = {}; 
+
+        //add all user's word count into wordDict
+        for(var userI in userDict.keys())
+        {
+            var userWordDict = userDict[userI].json["words"];
+
+            for(var wordI in userWordDict.keys())
+            {
+                if(wordDict[wordI].hasOwnProperty(wordI))
+                {
+                    wordDict[wordI] += userWordDict[wordI];
+                }
+                else
+                {
+                    wordDict[wordI] = userWordDict[wordI];
+                }
+            }
+        }
+
+        //find most used words
+        for(var wordI in wordDict.keys())
+        {
+            if(wordDict[wordI] > lowestMax)
+            {
+                //add to sorted list
+                for(var i = 0; i < maxCount.length; i++)
+                {
+                    if(maxCount[i] < wordDict[wordI])
+                    {
+                        //position found, insert into array
+                        maxCount.splice(i, 0, wordDict[wordI]);
+                        //remove 6th value
+                        maxCount.splice(5, 1);
+
+                        maxWord.splice(i, 0, wordI);
+                        maxCount.splice(5, 1);
+
+                        /* OLD CODE
+                        var j = maxCount.length - 1;
+                        while(j > i)
+                        {
+                            maxCount[j] = maxCount[j - 1];
+                            maxWord[j] = maxWord[j - 1];
+                        }
+
+                        //place at position i
+                        maxCount[i] = wordDict[wordI];
+                        maxWord[i] = wordI;
+                        */
+
+                        break;
+                    }
+                }
+
+                lowestMax = maxCount[4];
+            }
+        }
+
+        return [maxWord, maxCount];
     }
 
     countPosts(userDict)

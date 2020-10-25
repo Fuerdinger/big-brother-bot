@@ -49,6 +49,7 @@ class TextChannel
             this.json["channelID"] = channelID;
             this.json["channelCreationTime"] = channelCreationTime;
             this.json["messages"] = [];
+            this.json["words"] = {}; //dictionary containing number of times a word is used
 
             this.serializeChatLogToDisk();
         }
@@ -82,6 +83,24 @@ class TextChannel
     recordMessage(message)  //adds a single message to the .json
     {
         this.json["messages"].push(message);
+        this.updateWordCount(message);
+    }
+
+    updateWordCount(message)
+    {
+        var newWords = message.message.split(" ");
+        
+        for(var i = 0; i < newWords.length; i++)
+        {
+            if(this.json["words"].hasOwnProperty(newWords[i]))
+            {
+                this.json["words"][newWords[i]] += 1;
+            }
+            else
+            {
+                this.json["words"][newWords[i]] = 1;
+            }
+        }
     }
 
     //overwrites the file with the recent messages

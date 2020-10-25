@@ -98,6 +98,7 @@ class Server
             //regular message, store in cache
             this.cacheTextChannelMessage(channelID, message, userID, timePosted);
             this.cacheUserMessage(userID, message, channelID, timePosted);
+            return ""; //when message is not a call to !bb UI, "" is returned
         }
     }
 

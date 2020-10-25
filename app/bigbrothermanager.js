@@ -166,7 +166,14 @@ class BigBrotherManager
     addServerToList(newServer)
     {
         this.servers.push(newServer);
-        let bigbrother = JSON.stringify(this.servers);
+
+        var tempJSON = [];
+        for (var i = 0; i < this.servers.length; i++)
+        {
+            tempJSON.push({"serverName": this.servers[i].json.serverName, "serverID": this.servers[i].json.serverID, "timeBotWasAdded": this.servers[i].json.timeBotWasAdded});
+        }
+
+        let bigbrother = JSON.stringify(tempJSON);
         fs.writeFileSync('./data/bigbrother.json', bigbrother);
     }
     

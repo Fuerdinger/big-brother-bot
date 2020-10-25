@@ -101,7 +101,7 @@ class Server
         //checks whether the message contains a prefix for a command or user is currently in menu
         if(message.content.startsWith("!bb") || this.ui.isInMenu())
         {
-            return this.ui.passInMessage(message.member.user.id, this.getChannel(message.channel.id), message.content)
+            return this.ui.passInMessage(message.member.user.id, this.getChannel(message.channel.id), message.content.trim())
         }
         else
         {

@@ -58,8 +58,13 @@ class UI
 
         if (this.currentMenuPlace === "-1")
         {
-            this.currentMenuPlace = "0";
-            return this.printMenuOptions();
+            if (message === "!bb")
+            {
+                this.currentMenuPlace = "0";
+                return this.printMenuOptions();
+            }
+
+            return this.runComplexCommand(message);
         }
 
         //if this is getUser or getChannel, then the inputted message must have been a user name/channel name
@@ -313,6 +318,94 @@ class UI
                 ret = "error in the menu.json file";
         }
         return ret;
+    }
+
+    runComplexCommand(message)
+    {
+        var separators = [' ', ',', '(', ')', '!bb'];
+        var words = message.split(/[(), ]/);
+
+        if (words.length < 2 || words[0] !== "!bb")
+        {
+            return mySearcher.help();
+        }
+
+        var funcName = words[1];
+        if (!(this.complexMap.hasOwnProperty(funcName)))
+        {
+            return "Not a valid function name. Type \"!bb help\" to see all functions.";
+        }
+
+        var argTypes = this.complexMap[funcName];
+        var args = [];
+
+        var i = 0;
+        for (var x = 2; x < words.length; x++)
+        {
+            if (words[x].length == 0) continue;
+
+            if (words[x] === "*")
+            {
+               args.push("*");
+               continue;
+            }
+
+            switch (argTypes[i])
+            {
+                case "user":
+                    var users = this.parentServer.getUserFromUsername(words[x]);
+                    if (users.length == 0) return "Invalid user.";
+                    args.push(users[0]);
+                    break;
+                case "channel":
+                    var channels = this.parentServer.getChannelFromChannelName(words[x]);
+                    if (channels.length == 0) return "Invalid channel.";
+                    args.push(channels[0]);
+                    break;
+                case "word":
+                    args.push(words[x]);
+                    break;
+                case "day":
+                    var parts = words[x].split('-');
+                    args.push(new Date(parts[0], parts[1] - 1, parts[2])); 
+                    break;
+            }
+
+            i++;
+        }
+
+        var ret;
+
+        switch (argTypes.length)
+        {
+            case 1:
+                ret = mySearcher[funcName](this.parentServer, args[0]);
+                break;
+            case 2:
+                ret = mySearcher[funcName](this.parentServer, args[0], args[1]);
+                break;
+            case 3:
+                ret = mySearcher[funcName](this.parentServer, args[0], args[1], args[2]);
+                break;
+            case 4:
+                ret = mySearcher[funcName](this.parentServer, args[0], args[1], args[2], args[3]);
+                break;
+        }
+
+        return ret;
+    }
+
+    complexMap = 
+    {
+        "wordSearch": ["user", "channel", "word"],
+        "wordSearchLength": ["user", "channel", "word"],
+        "postSearchByDay": ["user", "channel", "day"],
+        "postSearchByDayLength": ["user", "channel", "day"],
+        "postSearchByDayLengthAverage": ["user", "channel"],
+        "postSearchByDayLengthMax": ["user", "channel"],
+        "banSearch": ["user"],
+        "recentMessages": ["user"],
+        "mostUsedWords": ["user", "channel"]
     }
 
     //all other functions are private

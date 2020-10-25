@@ -5,8 +5,6 @@ class Searcher
 {
     //all of these functions will return strings
 
-    constructor() {}
-
     //specifies no user/channel serach restrictions
     nullString = '*';
 
@@ -57,9 +55,6 @@ class Searcher
 
     wordSearch(server, user, channel, word)
     {
-<<<<<<< HEAD
-        return "calling wordSearch";
-=======
         var userDict = filterByUC(server, user, channel);
         userDict = this.wordSearchDict(userDict, word);
 
@@ -67,30 +62,22 @@ class Searcher
                      " from " + this.resolveUserName(user) + 
                      " in " + this.resolveChannelName(channel) + "\n\n" + 
                      formattedString(userDict);
->>>>>>> Corey
     }
     //would print out all messages made by a user in a particular channel where they used a certain word
     //you can pass in an * for user and channel to specify that you want to see all users and all channels
 
     wordSearchLength(server, user, channel, word)
     {
-<<<<<<< HEAD
-        return "calling wordSearchLength";
-=======
         var userDict = filterByUC(server, user, channel);
         userDict = this.wordSearchDict(userDict, word);
 
         return "Number of messages from " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + ": " + this.countPosts(userDict);
->>>>>>> Corey
     }
     //do the same thing as above, but instead of printing out the messages, prints out the number of messages
 
     postSearchByDay(server, user, channel, day)
     {
-<<<<<<< HEAD
-        return "calling postSearchByDay";
-=======
         var userDict = filterByUC(server, user, channel);
         userDict = this.postSearchByDayDict(userDict, day);
         return "Messages containing \"" + word + "\"" +
@@ -98,48 +85,35 @@ class Searcher
                     " in " + this.resolveChannelName(channel) + 
                     " on " + day.toDateString() + "\n\n" + 
                     formattedString(userDict);
->>>>>>> Corey
     }
     //print out all the posts made by a user in a particular channel in a certain day
 
     postSearchByDayLength(server, user, channel, day)
     {
-<<<<<<< HEAD
-        return "calling postSearchByDayLength";
-=======
         var userDict = filterByUC(server, user, channel);
         userDict = this.postSearchByDayDict(userDict, day);
         
         return "Number of messages from " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + 
                 " on " + day.toDateString() + ": " + userDict.length;
->>>>>>> Corey
     }
     //same thing as above, but it does length instead
 
     postSearchByDayLengthAverage(server, user, channel)
     {
-<<<<<<< HEAD
-        return "calling postSearchByDayLengthAverage";
-=======
         var userDict = this.filterByUC(server, user, channel);
         return "Average messages made each day by " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + ": " + 
                 (this.countPosts(userDict) / this.uniqueDays(userDict));
->>>>>>> Corey
     }
     //same thing as above, but it computes it for every day and takes the average of all of them
 
     postSearchByDayLengthMax(server, user, channel)
     {
-<<<<<<< HEAD
-        return "calling postSearchByDayLengthMax";
-=======
         var userDict = this.filterByUC(server, user, channel);
         return "Most messages made in a day by " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + ": " + 
                 this.maxPostsInDay(userDict);
->>>>>>> Corey
     }
     //same thing as above, but instead of average, it finds the max
 
@@ -150,10 +124,6 @@ class Searcher
     //prints number of times a user was banned as well as the dates they were banned (and also the reason)
     //you can pass in * for the user to see it for all users
 
-<<<<<<< HEAD
-    recentMessages(server, user)
-    {
-=======
     //complex due to potential pages, need further design specifications
     recentMessages(server, user)
     {
@@ -170,7 +140,6 @@ class Searcher
                         "\nChannel: " + sortedMessages[i].channelID;
         }
 
->>>>>>> Corey
         return "calling recentMessages";
     }
     //prints the most recent messages made by a user (do 10 for now)
@@ -178,9 +147,6 @@ class Searcher
 
     mostUsedWords(server, user, channel)
     {
-<<<<<<< HEAD
-        return "calling mostUsedWords";
-=======
         var userDict = this.filterByUC(server, user, channel);
         var mostUsedWordsLists = this.mostUsedWordsDict(userDict);
         var retStr = "Most used words from " + this.resolveUserName(user) + 
@@ -194,13 +160,10 @@ class Searcher
         }
 
         return retStr;
->>>>>>> Corey
     }
     //prints out the most used words by a user for a channel
     //* can be passed in for user and channel
 
-<<<<<<< HEAD
-=======
     /* Private functions */
 
     //returns relevant user info
@@ -527,7 +490,6 @@ class Searcher
 
         return userDict;
     }
->>>>>>> Corey
 }
 
 module.exports = {Searcher};

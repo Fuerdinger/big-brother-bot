@@ -1,20 +1,12 @@
-<<<<<<< HEAD
-=======
 const server = require("./server");
 const user = require("./user");
 
->>>>>>> Corey
 class Searcher
 {
     //all of these functions will return strings
 
-<<<<<<< HEAD
     constructor() {}
 
-    help(server)
-    {
-        return "calling help";
-=======
     //specifies no user/channel serach restrictions
     nullString = '*';
 
@@ -60,7 +52,6 @@ class Searcher
     help()
     {
         return helpComment;
->>>>>>> Corey
     }
     //<this lists out all the different commands>
 

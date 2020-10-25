@@ -6,8 +6,8 @@ var IO = new srlz.IO();
 class UserMessage
 {
     message = "";
-    channel = "";
-    timePosted = "";
+    channelID = "";
+    timePosted = null; //this is supposed a Javascript 'Date' type
 }
 
 class User
@@ -16,6 +16,12 @@ class User
     userName = "";
     userID = 0;
     userJoinTime = "";
+
+    getServerName(){return this.serverName;}
+    getUserName(){return this.userName;}
+    getUserID(){return this.userID;}
+    getUserJoinTime(){return this.userJoinTime;}
+    getNumMessagesTotal(){return this.json.messages.length;}
 
     //the memory representation of the json file
     json = {};
@@ -27,18 +33,18 @@ class User
     constructor(serverName, userName, userID, userJoinTime)
     {
         this.serverName = serverName;
-        this.userName = userName;
-
-        if (userID == null || userJoinTime == null ||
-            IO.exists(this.serverName, "users/"+this.userName)) //user already exists and has a completed file
+        this.userID = userID;
+        
+        if (userName == null || userJoinTime == null ||
+            IO.exists(this.serverName, "users/"+this.userID)) //user already exists and has a completed file
         {
             this.serializeChatLogFromDisk();
-            this.userID = this.json["userID"];
+            this.userName = this.json["userName"];
             this.userJoinTime = this.json["userJoinTime"];
         }
         else //user must have just joined the server, and the file doesn't exist (or bot must have just been added)
         {
-            this.userID = userID;
+            this.userName = userName;
             this.userJoinTime = userJoinTime;
 
             this.json["serverName"] = serverName;
@@ -46,6 +52,7 @@ class User
             this.json["userID"] = userID;
             this.json["userJoinTime"] = userJoinTime;
             this.json["messages"] = [];
+            this.json["words"] = {}; //dictionary containing number of times a word is used
 
             this.serializeChatLogToDisk();
         }
@@ -59,7 +66,7 @@ class User
     serializeChatLogFromDisk() //reads the .json into memory
     {
         assert(this.fd == 0); //when this function is called, fd should be 0
-        this.fd = IO.openFile(this.serverName, "users/"+this.userName, "r");
+        this.fd = IO.openFile(this.serverName, "users/"+this.userID, "r");
         var data = IO.readFromFile(this.fd, "r");
         this.json = JSON.parse(data); 
         IO.closeFile(this.fd);
@@ -70,7 +77,7 @@ class User
     {
         //when this function is called, fd should be 0
         assert(this.fd == 0);
-        this.fd = IO.openFile(this.serverName, "users/"+this.userName, "w");
+        this.fd = IO.openFile(this.serverName, "users/"+this.userID, "w");
         IO.writeToFile(this.fd, this.json, "w");
         IO.closeFile(this.fd);
         this.fd = 0;
@@ -80,6 +87,24 @@ class User
     recordMessage(message) //adds a single message to the .json
     {
         this.json["messages"].push(message);
+        this.updateWordCount(message);
+    }
+
+    updateWordCount(message)
+    {
+        var newWords = message.message.split(" ");
+        
+        for(var i = 0; i < newWords.length; i++)
+        {
+            if(this.json["words"].hasOwnProperty(newWords[i]))
+            {
+                this.json["words"][newWords[i]] += 1;
+            }
+            else
+            {
+                this.json["words"][newWords[i]] = 1;
+            }
+        }
     }
 
     //overwrites the file with the recent messages

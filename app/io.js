@@ -1,8 +1,9 @@
 var fs = require('fs');
+var path = require('path');
 
 class IO
 {
-    serversPath = __dirname + '/../data/servers/';
+    serversPath = path.join(__dirname, '../data/servers/');
     constructor(){}
     
     exists(serverName, localName)

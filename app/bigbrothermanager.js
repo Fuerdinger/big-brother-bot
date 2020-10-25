@@ -23,7 +23,7 @@ string for the name of the text channel it was posted in
 
 // require the discord.js module
 const Discord = require('discord.js');
-const { prefix, token, clientID } = require('../data/util/config.json');
+const { token, clientID } = require('../data/util/config.json');
 
 // create a new Discord client
 const client = new Discord.Client();
@@ -46,7 +46,7 @@ class BigBrotherManager
 
         // create a new server for each index
         for (var i = 0; i < serverstr.length; i++) {
-            var server = new srv.Server(null, serverstr[i].json.serverName, serverstr[i].json.serverID, serverstr[i].json.timeBotWasAdded);
+            var server = new srv.Server(null, serverstr[i].serverName, serverstr[i].serverID, serverstr[i].timeBotWasAdded);
             console.log(server);
 
             this.servers.push(server);
@@ -70,6 +70,11 @@ class BigBrotherManager
                 return;
             }
 
+            if (message.content === "")
+            {
+                return;
+            }
+
             // add message to Server - server.receiveMessage(message, channel.id, user.id, );
             for (var i = 0; i < this.servers.length; i++) {
                 if (this.servers[i].json.serverID == message.guild.id) {
@@ -77,7 +82,7 @@ class BigBrotherManager
                 }
             }
             if (server != '') {
-                var msg = server.receiveMessage(message.content, message.channel.id, message.member.user.tag, message.createdTimestamp);
+                var msg = server.receiveMessage(message);
                 if (!(msg === ""))
                 {
                     message.channel.send(msg);
@@ -128,6 +133,7 @@ class BigBrotherManager
         /************ TEXT CHANNELS ************/
         client.on("channelCreate", channel => 
         {
+
             let thisServer = '';
             // thisServer = this.servers.find(server => server.serverID == channel.guild.id);
             for (var i = 0; i < this.servers.length; i++) {
@@ -136,16 +142,20 @@ class BigBrotherManager
                 }
             }
 
-            /* Add channel to servers list */
+            /*
+            // Add channel to servers list
             for (var x = 0; x < this.servers.length; x++) {
                 if (thisServer != null) {
                     thisServer.channels.push(channel.id);
                     break;
                 }
             }
+            */
             if (thisServer != '') {
                 thisServer.addTextChannelToList(channel.name, channel.id, channel.createdTimestamp);
             }
+
+
 
             // let bigbrother = JSON.stringify(this.servers);
             // fs.writeFileSync('./data/bigbrother.json', bigbrother);

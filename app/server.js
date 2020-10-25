@@ -27,13 +27,16 @@ class Server
     getNumMessagesInServer()
     {
         var ret = 0;
-        for (const [key, value] of this.textChannels)
+
+        var values = Object.values(this.textChannels);
+        for (var i = 0; i < values.length; i++)
         {
-            ret += value.json.messages.length;
+            ret += values[0].json.messages.length;
         }
+
         return ret;
     }
-    getNumUsersInServer(){return this.users.size;}
+    getNumUsersInServer(){return Object.values(this.users).length;}
 
     //initializes the server given the server name and ID(discord.guild has a unique ID already generated)
     //will need to overload function to detect server objects created without params
@@ -83,21 +86,25 @@ class Server
 
     /* Public functions to be called by bigbrothermanger.js */
     
+
+    //message.content, message.channel.id, message.member.user.id, message.createdTimestamp
+    //message, channelID, userID, timePosted
+
     //this function should be called by big brother manager, and should return a string which the big brother manager may have to output
     //the strings should be outputted to the appropriate channel by big brother manager, if the returned strings are not empty
     //channelID and userName should be unique identifiers used to identify users/channels across the system
-    receiveMessage(message, channelID, userID, timePosted)
+    receiveMessage(message)
     {
         //checks whether the message contains a prefix for a command or user is currently in menu
-        if(message.startsWith("!bb") || this.ui.isInMenu())
+        if(message.content.startsWith("!bb") || this.ui.isInMenu())
         {
-            return this.ui.passInMessage(userID, channel, message)
+            return this.ui.passInMessage(message.member.user.id, this.getChannel(message.channel.id), message.content)
         }
         else
         {
             //regular message, store in cache
-            this.cacheTextChannelMessage(channelID, message, userID, timePosted);
-            this.cacheUserMessage(userID, message, channelID, timePosted);
+            this.cacheTextChannelMessage(message.channel.id, message.content, message.member.user.id, message.createdTimestamp);
+            this.cacheUserMessage(message.member.user.id, message.content, message.channel.id, message.createdTimestamp);
             return ""; //when message is not a call to !bb UI, "" is returned
         }
     }
@@ -135,6 +142,22 @@ class Server
             return null;
         }
     }
+
+    getChannelFromChannelName(channelName)
+    {
+        var keys = Object.keys(this.textChannels);
+        var ret = [];
+
+        for (var i = 0; i < keys.length; i++)
+        {
+            if (this.textChannels[keys[i]].channelName === channelName)
+            {
+                ret.push(this.textChannels[keys[i]]);
+            }
+        }
+
+        return ret;
+    }
     
     getUser(userID)
     {
@@ -146,6 +169,22 @@ class Server
         {
             return null;
         }
+    }
+
+    getUserFromUsername(username)
+    {
+        var keys = Object.keys(this.users);
+        var ret = [];
+
+        for (var i = 0; i < keys.length; i++)
+        {
+            if (this.users[keys[i]].userName === username)
+            {
+                ret.push(this.users[keys[i]]);
+            }
+        }
+        
+        return ret;
     }
 
     /* Private functions for handling data */

@@ -36,7 +36,7 @@ class TextChannel
             || IO.exists(this.serverName, "textchannels/"+this.channelID)) //text channel already exists, has a completed file
         {
             this.serializeChatLogFromDisk();
-            this.channelN = this.json["channelName"];
+            this.channelName = this.json["channelName"];
             this.channelCreationTime = this.json["channelCreationTime"];
         }
         else //text channel must have just been created (or bot must have just been added to server)

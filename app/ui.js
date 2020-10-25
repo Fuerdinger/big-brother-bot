@@ -32,6 +32,9 @@ class UI
     //a function can look at this var to see what word it should be searching for
     currentDateArg = "";
 
+    //this is a temp array for holding multiple users (or channels) if the user picked a username/channelName shared by multiple channels
+    currentArrayOptions = [];
+
     //the current function being used; this is set if a function can't be called immediately,
     //and requires an arg
     currentFunction = "";
@@ -62,42 +65,87 @@ class UI
         //if this is getUser or getChannel, then the inputted message must have been a user name/channel name
         if (this.currentMenuPlace === "getUser")
         {
-            var ret = "";
-            this.currentUser = this.parentServer.getUser(user);
+            var users =  this.parentServer.getUserFromUsername(message);
 
             //user entered invalid user name
-            if (this.currentUser == null)
+            if (users.length == 0)
             {
                 this.currentMenuPlace = "0";
-                ret = "No such user exists.\n";
+                return "No such user exists.\n" + this.printMenuOptions();
             }
 
-            else
+            //more than one user has this username
+            if (users.length > 1)
             {
-                this.currentMenuPlace = menuScript[this.currentMenuPlace]["options"][0]["goto"];
+                this.currentMenuPlace = "pickUser";
+                this.currentArrayOptions = users;
+                var ret = "Multiple users share that name. Pick one."
+                for (var i = 0; i < users.length; i++)
+                {
+                    ret += "\n" + (i + 1) + ". userID = " + users[i].userID;
+                }
+                return ret;
             }
 
-            return ret + this.printMenuOptions();
+            this.currentUser = users[0];
+            this.currentMenuPlace = menuScript[this.currentMenuPlace]["options"][0]["goto"];
+
+            return this.printMenuOptions();
         }
 
         if (this.currentMenuPlace === "getChannel")
         {
-            var ret = "";
-            this.currentChannel = this.parentServer.getChannel(channel);
+            var channels = this.parentServer.getChannelFromChannelName(message);
 
             //user entered an invalid channel name
-            if (this.currentChannel == null)
+            if (channels.length == 0)
             {
                 this.currentMenuPlace = "0";
-                ret = "No such channel exists.\n";
+                return "No such channel exists.\n" + this.printMenuOptions();
             }
 
+            //more than one channel has this channelName
+            if (channels.length > 1)
+            {
+                this.currentMenuPlace = "pickChannel";
+                this.currentArrayOptions = channels;
+                var ret = "Multiple channels share that name. Pick one."
+                for (var i = 0; i < channels.length; i++)
+                {
+                    ret += "\n" + (i + 1) + ". channelID = " + channels[i].channelID;
+                }
+                return ret;
+            }
+
+            this.currentChannel = channels[0];
+            this.currentMenuPlace = menuScript[this.currentMenuPlace]["options"][0]["goto"];
+
+            return this.printMenuOptions();
+        }
+
+        if (this.currentMenuPlace === "pickChannel" || this.currentMenuPlace === "pickUser")
+        {
+            //in this case, the user entered a number
+            var optionNum = parseInt(message);
+            
+            //if they either didn't enter a number, or entered an invalid range
+            if (isNaN(optionNum) || optionNum < 1 || optionNum > this.currentArrayOptions.length)
+            {
+                return "Bad input, try again.\n";
+            }
+
+            if (this.currentMenuPlace === "pickChannel")
+            {
+                this.currentChannel = this.currentArrayOptions[optionNum - 1];
+                this.currentMenuPlace = "channelMenu";
+            }
             else
             {
-                this.currentMenuPlace = menuScript[this.currentMenuPlace]["options"][0]["goto"];
+                this.currentUser = this.currentArrayOptions[optionNum - 1];
+                this.currentUser = "userMenu";
             }
 
-            return ret + this.printMenuOptions();
+            return this.printMenuOptions();
         }
 
         //in this case, a function was called that required this argument
@@ -179,7 +227,7 @@ class UI
             for (var i = 0; i < regex.length; i++)
             {
                 var getter = regexObj["get" + regex[i]]();
-                var replacement = getter
+                var replacement = getter;
                 header = header.replace("%", ""+replacement);
             }
         }

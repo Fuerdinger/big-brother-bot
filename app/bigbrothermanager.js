@@ -19,6 +19,7 @@ string for the name of the text channel it was posted in
 // require the discord.js module
 const Discord = require('discord.js');
 const { token, clientID } = require('../data/util/config.json');
+const tester = require('tester');
 
 // create a new Discord client
 const client = new Discord.Client();
@@ -54,7 +55,6 @@ class BigBrotherManager
         /*** When a new message is sent, hand it to server ***/
         client.on('message', message =>
         {   
-            console.log("message should be added to channel: " + message.channel.id);
             var server = '';
             
             //if the message was posted by big brother manager
@@ -90,7 +90,8 @@ class BigBrotherManager
         client.on('guildCreate', guild => {
             console.log(guild);
             var today = new Date();
-            let newServer = new srv.Server(guild, guild.name, guild.id, today);
+            let timestamp = today.getTime();
+            let newServer = new srv.Server(guild, guild.name, guild.id, timestamp);
             this.addServerToList(newServer);
         });
 

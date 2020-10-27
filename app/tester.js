@@ -12,21 +12,25 @@ var txt = require('./textchannel.js');
 let today = new Date();
 let timestamp = today.getTime();
 
-let channel1 = {"serverName": "111111111111111112","channelName": "Test-Channel-1","channelID": "1111","channelCreationTime": 1243534626};
-let channel2 = {"serverName": "111111111111111112","channelName": "Test-Channel-2","channelID": "2222","channelCreationTime": 1919385926};
-
-let guild = {};
-guild.name = "Test-Server-2";
-guild.id = "111111111111111112";
-guild.channels = [];
-guild.channels.push(channel1);
-guild.channels.push(channel2);
+let guild = {
+    id: "770006882429304872",
+    name: "Bot-Test-2",
+    timeBotWasAdded: 1603669903345
+};
 
 let user = {};
-user.username = "name 1";
-user.id = "2111111";
-user.joinedTimestamp = timestamp;
-user.serverID = "111111111111111112";
+user.username = "phungngo1020#2170";
+user.id = "692465323231805541";
+user.joinedTimestamp = 1603654346817;
+user.serverID = "770006882429304872";
+
+let message = {};
+message.channel = {id: "770007477139669002"};
+message.member = { user }
+message.createdTimestamp = timestamp;
+message.content = "test message";
+message.guild = guild;
+
 
 var fs = require('fs');
 var data = JSON.parse(fs.readFileSync('../data/bigbrother.json', 'utf8'));
@@ -37,6 +41,9 @@ for (var i = 0; i < serverstr.length; i++) {
     servers.push(server);
 }
 
+let channel1 = {"serverName": "770006882429304872","channelName": "Test-Channel-1","channelID": "1111","channelCreationTime": 1243534626};
+let channel2 = {"serverName": "770006882429304872","channelName": "Test-Channel-2","channelID": "2222","channelCreationTime": 1919385926};
+
 guildCreate(guild);         // gives error on line 76 -> line 83 in server.js
 
 channelCreate(channel1);    // works
@@ -44,6 +51,29 @@ channelCreate(channel2);    // works
 
 guildMemberAdd(user);       // gives error because guildCreate failed to add server to bigbrother.json
 
+newMessage(message);        // works
+
+/************** Add new message **************/
+// add message to Server - server.receiveMessage(message, channel.id, user.id, );
+function newMessage(message) {
+    let server = '';
+
+    for (var i = 0; i < this.servers.length; i++) {
+        if (this.servers[i].json.serverID == message.guild.id) {
+            server = this.servers[i];
+        }
+    }
+    
+    if (server != '') {
+        var msg = server.receiveMessage(message);
+        console.log(msg);   // works, test with returning a string in server.js line 111
+
+        if (!(msg === ""))
+        {
+            // message.channel.send(msg);   // not able to implement with a test message
+        }
+    } 
+}
 
 /************** Add new Server **************/
 function addServerToList(newServer) {
@@ -58,6 +88,7 @@ function addServerToList(newServer) {
     let bigbrother = JSON.stringify(tempJSON);
     fs.writeFileSync('../data/bigbrother.json', bigbrother);
 }
+
 function guildCreate(guild) 
 {
     let server = guild;

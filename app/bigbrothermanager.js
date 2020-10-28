@@ -19,7 +19,6 @@ string for the name of the text channel it was posted in
 // require the discord.js module
 const Discord = require('discord.js');
 const { token, clientID } = require('../data/util/config.json');
-const tester = require('tester');
 
 // create a new Discord client
 const client = new Discord.Client();

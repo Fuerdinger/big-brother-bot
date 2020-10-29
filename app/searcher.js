@@ -55,47 +55,56 @@ class Searcher
 
     wordSearch(server, user, channel, word)
     {
-        var userDict = filterByUC(server, user, channel);
+        var userDict = this.filterByUC(server, user, channel);
         userDict = this.wordSearchDict(userDict, word);
 
         return "Messages containing \"" + word + "\"" +
                      " from " + this.resolveUserName(user) + 
-                     " in " + this.resolveChannelName(channel) + "\n\n" + 
-                     formattedString(userDict);
+                     " in " + this.resolveChannelName(channel) + ":\n" + 
+                     this.formatMessages(userDict);
     }
     //would print out all messages made by a user in a particular channel where they used a certain word
     //you can pass in an * for user and channel to specify that you want to see all users and all channels
 
     wordSearchLength(server, user, channel, word)
     {
-        var userDict = filterByUC(server, user, channel);
+        var userDict = this.filterByUC(server, user, channel);
         userDict = this.wordSearchDict(userDict, word);
 
         return "Number of messages from " + this.resolveUserName(user) +
-                " in " + this.resolveChannelName(channel) + ": " + this.countPosts(userDict);
+                " in " + this.resolveChannelName(channel) + 
+                " containing the word \"" + word + "\"" + 
+                ": " + this.countPosts(userDict) + "\n";
     }
     //do the same thing as above, but instead of printing out the messages, prints out the number of messages
 
+    //format ddmmyyyy
+
+
+
+
+
+    //WRONG
     postSearchByDay(server, user, channel, day)
     {
-        var userDict = filterByUC(server, user, channel);
+        var userDict = this.filterByUC(server, user, channel);
         userDict = this.postSearchByDayDict(userDict, day);
         return "Messages containing \"" + word + "\"" +
                     " from " + this.resolveUserName(user) + 
                     " in " + this.resolveChannelName(channel) + 
-                    " on " + day.toDateString() + "\n\n" + 
-                    formattedString(userDict);
+                    " on " + day.toString() + "\n\n" + 
+                    this.formatMessages(userDict);
     }
     //print out all the posts made by a user in a particular channel in a certain day
 
     postSearchByDayLength(server, user, channel, day)
     {
-        var userDict = filterByUC(server, user, channel);
+        var userDict = this.filterByUC(server, user, channel);
         userDict = this.postSearchByDayDict(userDict, day);
         
         return "Number of messages from " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + 
-                " on " + day.toDateString() + ": " + userDict.length;
+                " on " + day.toString() + ": " + userDict.length + "\n\n";
     }
     //same thing as above, but it does length instead
 
@@ -104,7 +113,7 @@ class Searcher
         var userDict = this.filterByUC(server, user, channel);
         return "Average messages made each day by " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + ": " + 
-                (this.countPosts(userDict) / this.uniqueDays(userDict));
+                (this.countPosts(userDict) / this.uniqueDays(userDict)).toFixed(2) + "\n\n";
     }
     //same thing as above, but it computes it for every day and takes the average of all of them
 
@@ -113,7 +122,7 @@ class Searcher
         var userDict = this.filterByUC(server, user, channel);
         return "Most messages made in a day by " + this.resolveUserName(user) +
                 " in " + this.resolveChannelName(channel) + ": " + 
-                this.maxPostsInDay(userDict);
+                this.maxPostsInDay(userDict) + "\n\n";
     }
     //same thing as above, but instead of average, it finds the max
 
@@ -123,8 +132,6 @@ class Searcher
     }
     //prints number of times a user was banned as well as the dates they were banned (and also the reason)
     //you can pass in * for the user to see it for all users
-
-    //complex due to potential pages, need further design specifications
     recentMessages(server, user)
     {
         var numberOfMessagesToDisplay = 5;
@@ -133,14 +140,14 @@ class Searcher
         var sortedMessages = this.recentMessagesSort(userDict);
         var retStr = "Most recent messages from " + this.resolveUserName(user) + ":\n";
 
-        for(var i = 0; i < numberOfMessagesToDisplay; i++)
+        for(var i = 0; i < Math.min(numberOfMessagesToDisplay, sortedMessages.length); i++)
         {
-            retStr += "#" + (i + 1) + "\nMessage: " + sortedMessages[i].message + 
-                        "\nTime posted: " + sortedMessages[i].timePosted + 
-                        "\nChannel: " + sortedMessages[i].channelID;
+            retStr += "#" + (i + 1) + "\nMessage: " + sortedMessages[i]["message"] + 
+                        "\nTime posted: " + sortedMessages[i]["timePosted"] + 
+                        "\nChannel: " + server.getChannelName(sortedMessages[i]["channelID"]) + "\n\n";
         }
 
-        return "calling recentMessages";
+        return retStr;
     }
     //prints the most recent messages made by a user (do 10 for now)
     //pass in * for the user to see for all users, server wide
@@ -152,19 +159,35 @@ class Searcher
         var retStr = "Most used words from " + this.resolveUserName(user) + 
                         " in " + this.resolveChannelName(channel) +
                         ": \n";
-
+        console.log(mostUsedWordsLists[0].length);
         for(var i = 0; i < mostUsedWordsLists[0].length; i++)
         {
             retStr += "#" + (i + 1) + "\nWord: " + mostUsedWordsLists[0][i] +
                         "\nTimes used: " + mostUsedWordsLists[1][i] + "\n";
         }
 
-        return retStr;
+        return retStr + "\n";
     }
     //prints out the most used words by a user for a channel
     //* can be passed in for user and channel
 
     /* Private functions */
+
+    //converts json["messages"]["timePosted"] from milliseconds to Date()
+    convertToDateClass(dict)
+    {
+        for(var k of Object.keys(dict))
+        {
+            var messages = dict[k].json["messages"];
+
+            for(var i = 0; i < messages.length; i++)
+            {
+                dict[k].json["messages"][i]["timePosted"] = new Date(messages[i]["timePosted"]);
+            }
+        }
+
+        return dict;
+    }
 
     //returns relevant user info
     obtainUserInfo(server, user)
@@ -177,8 +200,10 @@ class Searcher
         }
         else
         {
-            userDict[user]= user;
+            userDict[user] = user;
         }
+
+        userDict = this.convertToDateClass(userDict);
 
         return userDict;
     }
@@ -195,6 +220,8 @@ class Searcher
         {
             channelDict[channel] = channel;
         }
+
+        channelDict = this.convertToDateClass(channelDict);
 
         return channelDict;
     }
@@ -225,19 +252,21 @@ class Searcher
 
     //formats all posts from user dictionary
     //posts are added in order of users, not by time posted (can be changed in the future)
-    formatUserMessages(userDict)
+    formatMessages(userDict)
     {
         var formattedString = "";
 
-        for(var userI in userDict.keys())
+        for(var userI of Object.keys(userDict))
         {
-            for(var i = 0; i < userDict[userI].json["messages"].length; i++)
+            var user = userDict[userI];
+            for(var i = 0; i < Object.keys(user.json["messages"]).length; i++)
             {
                 formattedString += 
-                    "User: " + userI + "\n" +
-                    "Channel: " + userDict[userI].json["channelID"] +
-                    "Time Posted: " + userDict[userI].json["timePosted"].toDateString(); + "\n" +
-                    "Message: " + userDict[userI].json["messages"][i] + "\n";
+                    "#" + (i + 1) + "\n" + 
+                    "User: " + user.userName + "\n" +
+                    "Message: " + user.json["messages"][i]["message"] + "\n" +
+                    "Channel: " + user.json["messages"][i]["channelID"] + "\n" +
+                    "Time Posted: " + user.json["messages"][i]["timePosted"] + "\n\n";
             }
         }
 
@@ -245,26 +274,41 @@ class Searcher
     }
 
     //sorts the messages by most recent
+    //technically unneeded as messages are already in order of date posted, unless multiple users are in userDict
     recentMessagesSort(userDict)
     {
-        messages = [];
+        var messages = [];
 
-        for(var userI in userDict.keys())
+        for(var userI of Object.keys(userDict))
         {
-            var user = userDict[userI];
-
+            var userMessages = userDict[userI].json["messages"];
             //go through all messages
-            for(var i = 0; i < user["messages"].length; i++)
+            for(var i = 0; i < userMessages.length; i++)
             {
-                var messageDate = user["messages"][i].timePosted.getTime();
+                var messageDate = userMessages[i]["timePosted"].getTime();
 
                 //find place in ordered list
-                for(var j = 0; j < messages.length; i++)
+                if(messages.length == 0)
                 {
-                    if(messageDate < messages[j].timePosted.getTime())
+                    messages.push(userMessages[i]);
+                }
+                else
+                {
+                    var j = 0;
+                    while(j < messages.length)
                     {
-                        //insert into list
-                        messages.splice(j, 0, user["messages"][i]);
+                        if(messageDate > messages[j]["timePosted"].getTime())
+                        {
+                            //insert into list
+                            messages.splice(j, 0, userMessages[i]);
+                            break;
+                        }
+                        j++;
+                    }
+
+                    if(j == messages.length)
+                    {
+                        messages.push(userMessages[i]);
                     }
                 }
             }
@@ -285,13 +329,13 @@ class Searcher
         var wordDict = {}; 
 
         //add all user's word count into wordDict
-        for(var userI in userDict.keys())
+        for(var userI of Object.keys(userDict))
         {
             var userWordDict = userDict[userI].json["words"];
 
-            for(var wordI in userWordDict.keys())
+            for(var wordI of Object.keys(userWordDict))
             {
-                if(wordDict[wordI].hasOwnProperty(wordI))
+                if(wordDict.hasOwnProperty(wordI))
                 {
                     wordDict[wordI] += userWordDict[wordI];
                 }
@@ -303,7 +347,7 @@ class Searcher
         }
 
         //find most used words
-        for(var wordI in wordDict.keys())
+        for(var wordI of Object.keys(wordDict))
         {
             if(wordDict[wordI] > lowestMax)
             {
@@ -318,20 +362,7 @@ class Searcher
                         maxCount.splice(5, 1);
 
                         maxWord.splice(i, 0, wordI);
-                        maxCount.splice(5, 1);
-
-                        /* OLD CODE
-                        var j = maxCount.length - 1;
-                        while(j > i)
-                        {
-                            maxCount[j] = maxCount[j - 1];
-                            maxWord[j] = maxWord[j - 1];
-                        }
-
-                        //place at position i
-                        maxCount[i] = wordDict[wordI];
-                        maxWord[i] = wordI;
-                        */
+                        maxWord.splice(5, 1);
 
                         break;
                     }
@@ -348,14 +379,10 @@ class Searcher
     {
         var count = 0;
 
-        for(var userI in userDict.keys())
+        for(var userI of Object.keys(userDict))
         {
             var messages = userDict[userI].json["messages"];
-
-            for(var i = 0; i < messages.length; i++)
-            {
-                count += 1;
-            }
+            count += messages.length;
         }
 
         return count;
@@ -368,7 +395,7 @@ class Searcher
         var days = {};
 
         //count up number of posts per day
-        for(var userI in userDict.keys())
+        for(var userI of Object.keys(userDict))
         {
             var messages = userDict[userI].json["messages"];
 
@@ -387,7 +414,7 @@ class Searcher
         }
 
         //find maximum number of posts made in a day
-        for(var dayI in days.keys())
+        for(var dayI of Object.keys(days))
         {
             if(days[dayI] > max)
             {
@@ -402,7 +429,7 @@ class Searcher
     {
         var days = {};
 
-        for(var userI in userDict.keys())
+        for(var userI of Object.keys(userDict))
         {
             var messages = userDict[userI].json["messages"];
 
@@ -411,35 +438,44 @@ class Searcher
                 var dayStr = messages[i]["timePosted"].toDateString();
                 if(!days.hasOwnProperty(dayStr))
                 {
-                    days[dayStr] = True;
+                    days[dayStr] = true;
                 }
             }
         }
 
-        return days.length;
+        return Object.keys(days).length;
     }
 
     //filters a dictionary by word
-    wordSearchDict(userDict, word)
+    //bad implementation, can use substrings of word
+    wordSearchDict(userDictOrig, word)
     {
+        var userDict = JSON.parse(JSON.stringify(userDictOrig));
+        var count = 0;
         
 
-        for(var userI in userDict.keys())
+        for(var userI of Object.keys(userDict))
         {
             //search through all messages for each user
             var userMessages = userDict[userI].json["messages"];
-            for(var i = 0; i < userMessages.length; i++)
+
+            var i = 0;
+            while(i < userMessages.length)
             {
                 //remove messages without word
                 //      !!!!!currently does not check for lower/uppercase!!!!!
                 if(!userMessages[i]["message"].includes(word))
                 {
-                    userDict[userI].json["messages"].splice(i, 1);
+                    userMessages.splice(i, 1);
+                    count++;
+                }
+                else
+                {
+                    i++;
                 }
             }
         }
         
-
         return userDict;
     }
 
@@ -447,16 +483,16 @@ class Searcher
     //note date is a Date object
     postSearchByDayDict(userDict, date)
     {
-        var dateString = date.toDateString();
+        var dateString = date.toString();
 
-        for(var userI in userDict.keys())
+        for(var userI of Object.keys(userDict))
         {
             //search through all messages for each user
             var userMessages = userDict[userI].json["messages"];
             for(var i = 0; i < userMessages.length; i++)
             {
                 //remove messages not posted on day of date
-                if(userMessages[i]["message"].timePosted.toDateString() !== dateString)
+                if(userMessages[i]["message"]["timePosted"].toString() !== dateString)
                 {
                     userDict[userI].json["messages"].splice(i, 1);
                 }
@@ -473,7 +509,7 @@ class Searcher
 
         if(channel !== this.nullString)
         {
-            for(var userI in userDict.keys())
+            for(var userI of Object.keys(userDict))
             {
                 //search through all messages for each user
                 var userMessages = userDict[userI].json["messages"];

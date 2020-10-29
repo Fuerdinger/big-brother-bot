@@ -7,6 +7,7 @@ const { User } = require("./user.js");
 var srlz = require("./io.js");
 const { UI } = require("./ui.js");
 var IO = new srlz.IO();
+var cacheLimit = 5;
 
 //var dataLocation = path.normalize(__dirname + "/../data/servers");
 //TODO: fix system for initializing existing textchannels/users from file system
@@ -20,10 +21,11 @@ class Server
     json = {};
     fd = 0;
 
-    textChannels;
-    users;
+    textChannels = {};
+    users = {};
 
     ui = null;
+    cacheCounter = 0;
 
     getServerName(){return this.json.serverName;}
     getTimeBotWasAdded(){return this.json.timeBotWasAdded;}
@@ -46,6 +48,7 @@ class Server
     constructor(apiGuildObj, serverName, serverID, timeBotWasAdded) {
         this.json["serverID"] = serverID;
         this.fd = 0;
+        this.cacheCounter = 0;
 
         this.textChannels = {};
         this.users = {};
@@ -75,11 +78,9 @@ class Server
             this.json["serverName"] = serverName;
             this.json["timeBotWasAdded"] = timeBotWasAdded;
             this.json["serverID"] = serverID;
-            console.log(this.json["serverID"]);
             IO.makeDir(this.json["serverID"]);
             IO.makeDir(this.json["serverID"] + "/textchannels");
             IO.makeDir(this.json["serverID"] + "/users");
-            console.log("done making files");
             apiGuildObj.channels.cache.each(channel => this.addTextChannelToList(channel.name, channel.id, channel.createdTimestamp));
             apiGuildObj.members.cache.each(member => this.addUserToList(member.user.tag, member.user.id, member.joinedTimestamp));
 
@@ -89,6 +90,16 @@ class Server
 
     /* Public functions to be called by bigbrothermanger.js */
     
+    //tester functions
+    getUserMessages(userID)
+    {
+        return this.getUser(userID).json["messages"];
+    }
+
+    getChannelMessages(channelID)
+    {
+        return this.getChannelMessages(channelID).json["messages"];
+    }
 
     //message.content, message.channel.id, message.member.user.id, message.createdTimestamp
     //message, channelID, userID, timePosted
@@ -108,7 +119,15 @@ class Server
             //regular message, store in cache
             this.cacheTextChannelMessage(message.channel.id, message.content, message.member.user.id, message.createdTimestamp);
             this.cacheUserMessage(message.member.user.id, message.content, message.channel.id, message.createdTimestamp);
-            return ""; //when message is not a call to !bb UI, "" is returned
+            this.cacheCounter += 1;
+
+            if(this.cacheCounter >= cacheLimit)
+            {
+                this.allMessagesToMemory();
+                this.cacheCounter = 0;
+            }
+
+            return "";
         }
     }
 
@@ -146,6 +165,23 @@ class Server
         }
     }
 
+    getChannelName(channelID)
+    {
+        return this.textChannels[channelID].channelName;
+    }
+
+    getUser(userID)
+    {
+        if(this.users.hasOwnProperty(userID))
+        {
+            return this.users[userID];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     getChannelFromChannelName(channelName)
     {
         var keys = Object.keys(this.textChannels);
@@ -162,18 +198,6 @@ class Server
         return ret;
     }
     
-    getUser(userID)
-    {
-        if(this.users.hasOwnProperty(userID))
-        {
-            return this.users[userID];
-        }
-        else
-        {
-            return null;
-        }
-    }
-
     getUserFromUsername(username)
     {
         var keys = Object.keys(this.users);
@@ -196,7 +220,7 @@ class Server
     cacheTextChannelMessage(channelID, message, userID, timePosted)
     {
         //var newMessage = this.generateChannelMessage(message, userID, timePosted);
-        var newMessage = {message: message, channel: userID, timePosted: timePosted};
+        var newMessage = {message: message, userID: userID, timePosted: timePosted};
         this.textChannels[channelID].recordMessage(newMessage);
     }
 
@@ -204,7 +228,7 @@ class Server
     cacheUserMessage(userID, message, channelID, timePosted)
     {
         //var newMessage = this.generateUserMessage(message, channelID, timePosted);
-        var newMessage = {message: message, channel: channelID, timePosted: timePosted};
+        var newMessage = {message: message, channelID: channelID, timePosted: timePosted};
         this.users[userID].recordMessage(newMessage);
     }
 
@@ -216,15 +240,15 @@ class Server
 
     allChannelMessagesToMemory()
     {
-        for(let channelID of this.textChannels.keys()) {
-            this.channelMessagesToMemory(channelID);
+        for(var i of Object.keys(this.textChannels)) {
+            this.channelMessagesToMemory(i);
         }
     }
 
     allUserMessagesToMemory()
     {
-        for(let userID of this.users.keys()) {
-            this.userMessagesToMemory(userID);
+        for(var i of Object.keys(this.users)) {
+            this.userMessagesToMemory(i);
         }
     }
 

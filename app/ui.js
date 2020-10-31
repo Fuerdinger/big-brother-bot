@@ -35,6 +35,9 @@ class UI
     //this is a temp array for holding multiple users (or channels) if the user picked a username/channelName shared by multiple channels
     currentArrayOptions = [];
 
+    //a function can look at this var to see what integer it should be searching for
+    currentIndexArg = 0;
+
     //the current function being used; this is set if a function can't be called immediately,
     //and requires an arg
     currentFunction = "";
@@ -161,6 +164,16 @@ class UI
             //run the function and then backtrack to the last menu
             return this.runFunction(this.currentFunction) + "\n" + this.printMenuOptions();
         }
+        if (this.currentMenuPlace == "getRuleIndex")
+        {
+            this.currentIndexArg = parseInt(message);
+            this.currentMenuPlace = this.previousMenuPlace;
+
+            if (isNaN(this.currentIndexArg)) return "Not a number, try again.";
+            this.currentIndexArg--;
+            //run the function and then backtrack to the last menu
+            return this.runFunction(this.currentFunction) + "\n" + this.printMenuOptions();
+        }
 
         //in this case, the user entered a number
         var options = menuScript[this.currentMenuPlace]["options"];
@@ -224,6 +237,9 @@ class UI
                     break;
                 case "userMenu":
                     regexObj = this.currentUser;
+                    break;
+                case "moderateMenu":
+                    regexObj = this.parentServer.moderator;
                     break;
                 default:
                     return "Error";
@@ -312,6 +328,35 @@ class UI
                 break;
             case "userMostUsedWords":
                 return mySearcher.mostUsedWords(this.parentServer, this.currentUser, "*");
+                break;
+
+            case "removeRule":
+                return this.parentServer.moderator.removeRule(this.currentIndexArg);
+                return ;
+                break;
+            case "moderateKickOneDayForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 1, 1, "*");
+                return ;
+                break;
+            case "moderateKickOneDayForWordThreeTimes":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 1, 3, "*");
+                return ;
+                break;
+            case "moderateKickOneWeekForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 7, 1, "*");
+                return ;
+                break;
+            case "moderateKickOneWeekForWordThreeTimes":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 7, 3, "*");
+                return ;
+                break;
+            case "moderateBanForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, "*", 1, "*");
+                return ;
+                break;
+            case "moderateBanForWordThreeTimes":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, "*", 3, "*");
+                return ;
                 break;
 
             default:

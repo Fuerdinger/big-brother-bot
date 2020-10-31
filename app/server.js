@@ -6,6 +6,7 @@ const { TextChannel, ChannelMessage } = require("./textchannel.js");
 const { User } = require("./user.js");
 var srlz = require("./io.js");
 const { UI } = require("./ui.js");
+const {Moderator} = require("./moderator.js");
 var IO = new srlz.IO();
 var cacheLimit = 5;
 
@@ -25,6 +26,8 @@ class Server
     users = {};
 
     ui = null;
+    moderator = null;
+
     cacheCounter = 0;
 
     getServerName(){return this.json.serverName;}
@@ -53,6 +56,7 @@ class Server
         this.textChannels = {};
         this.users = {};
         this.ui = new UI(this);
+        this.moderator = new Moderator();
 
         if(serverName == null && timeBotWasAdded == null
                 || IO.exists(this.json["serverID"], this.json["serverID"])) //already exists
@@ -116,6 +120,9 @@ class Server
         }
         else
         {
+            //first give to moderator
+            var ret = this.moderator.receiveMessage(message.content);
+
             //regular message, store in cache
             this.cacheTextChannelMessage(message.channel.id, message.content, message.member.user.id, message.createdTimestamp);
             this.cacheUserMessage(message.member.user.id, message.content, message.channel.id, message.createdTimestamp);
@@ -127,7 +134,7 @@ class Server
                 this.cacheCounter = 0;
             }
 
-            return "";
+            return ret;
         }
     }
 

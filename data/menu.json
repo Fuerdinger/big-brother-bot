@@ -9,6 +9,7 @@
                 {"option": "Show me data for a user.", "goto": "getUser"},
                 {"option": "Show me data for a channel.", "goto": "getChannel"},
                 {"option": "Show me data for the whole server.", "goto": "serverMenu"},
+                {"option": "Moderate the server.", "goto": "moderateMenu"},
                 {"option": "Exit.", "goto": "-1"}
             ]
         },
@@ -39,6 +40,15 @@
         "getWord":
         {
             "header": "What's the word?",
+            "options":
+            [
+                {"option": "getString"}
+            ]
+        },
+
+        "getRuleIndex":
+        {
+            "header": "Which rule do you want to get rid of? Give its index (ex. \"2\")",
             "options":
             [
                 {"option": "getString"}
@@ -99,6 +109,36 @@
                 {"option": "Show me their most recent messages.", "run": "userMostRecentMessages"},
                 {"option": "Which words does the user use the most?.", "run": "userMostUsedWords"},
                 {"option": "Quit.", "goto": "0"}
+            ]
+        },
+
+        "moderateMenu":
+        {
+            "header": "Current server rules: \n%What do you want to do?",
+            "regex":
+            [
+                "Rules"
+            ],
+            "options":
+            [
+                {"option": "Create a new rule.", "goto": "createRuleMenu"},
+                {"option": "Remove a rule.", "run": "removeRule", "input": "getRuleIndex"},
+                {"option": "Quit.", "goto": "0"}
+            ]
+        },
+
+        "createRuleMenu":
+        {
+            "header": "Which kind of rule do you want to create?",
+            "options":
+            [
+                {"option": "Kick users for 1 day if they use this word.", "run": "moderateKickOneDayForWord", "input": "getWord"},
+                {"option": "Kick users for 1 day if they use this word 3 times.", "run": "moderateKickOneDayForWordThreeTimes", "input": "getWord"},
+                {"option": "Kick users for 1 week if they use this word.", "run": "moderateKickOneWeekForWord", "input": "getWord"},
+                {"option": "Kick users for 1 week if they use this word 3 times.", "run": "moderateKickOneWeekForWordThreeTimes", "input": "getWord"},
+                {"option": "Ban users if they use this word.", "run": "moderateBanForWord", "input": "getWord"},
+                {"option": "Ban users if they use this word 3 times.", "run": "moderateBanForWordThreeTimes", "input": "getWord"},
+                {"option": "Quit.", "goto": "moderateMenu"}
             ]
         }
     }

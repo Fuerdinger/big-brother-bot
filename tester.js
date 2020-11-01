@@ -5,8 +5,8 @@
 // instead of "/big-brother-bot/data/servers/"
 
 
-var srv = require('./server.js');
-var txt = require('./textchannel.js');
+var srv = require('./app/server.js');
+var txt = require('./app/textchannel.js');
 
 /************** Test **************/
 let today = new Date();
@@ -44,14 +44,34 @@ for (var i = 0; i < serverstr.length; i++) {
 let channel1 = {"serverName": "770006882429304872","channelName": "Test-Channel-1","channelID": "1111","channelCreationTime": 1243534626};
 let channel2 = {"serverName": "770006882429304872","channelName": "Test-Channel-2","channelID": "2222","channelCreationTime": 1919385926};
 
-guildCreate(guild);         // gives error on line 76 -> line 83 in server.js
+try {
+    guildCreate(guild);         // gives error on line 76 -> line 83 in server.js
+} catch {
 
-channelCreate(channel1);    // works
-channelCreate(channel2);    // works
+}
 
-guildMemberAdd(user);       // gives error because guildCreate failed to add server to bigbrother.json
+try {
+    channelCreate(channel1);    // works
+    console.log("Added channel1");
+    channelCreate(channel2);    // works
+    console.log("Added channel2");
+} catch (err) {
+    console.log(err);
+}
 
-newMessage(message);        // works
+try {
+    guildMemberAdd(user);       // gives error because guildCreate failed to add server to bigbrother.json
+    console.log("Added new user");
+} catch (err) {
+    console.log(err);
+}
+
+try {
+    newMessage(message);        // works
+    console.log("Added new message");
+} catch (err) {
+    console.log(err);
+}
 
 /************** Add new message **************/
 // add message to Server - server.receiveMessage(message, channel.id, user.id, );

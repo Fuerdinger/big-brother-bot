@@ -56,7 +56,7 @@ class Server
         this.textChannels = {};
         this.users = {};
         this.ui = new UI(this);
-        this.moderator = new Moderator();
+        this.moderator = new Moderator(this);
 
         if(serverName == null && timeBotWasAdded == null
                 || IO.exists(this.json["serverID"], this.json["serverID"])) //already exists
@@ -82,6 +82,7 @@ class Server
             this.json["serverName"] = serverName;
             this.json["timeBotWasAdded"] = timeBotWasAdded;
             this.json["serverID"] = serverID;
+            this.json["rules"] = this.moderator.moderationRules;
             IO.makeDir(this.json["serverID"]);
             IO.makeDir(this.json["serverID"] + "/textchannels");
             IO.makeDir(this.json["serverID"] + "/users");
@@ -121,7 +122,7 @@ class Server
         else
         {
             //first give to moderator
-            var ret = this.moderator.receiveMessage(message.content);
+            var ret = this.moderator.receiveMessage(message);
 
             //regular message, store in cache
             this.cacheTextChannelMessage(message.channel.id, message.content, message.member.user.id, message.createdTimestamp);
@@ -131,6 +132,7 @@ class Server
             if(this.cacheCounter >= cacheLimit)
             {
                 this.allMessagesToMemory();
+                this.rulesToMemory();
                 this.cacheCounter = 0;
             }
 
@@ -245,6 +247,11 @@ class Server
         this.allUserMessagesToMemory();
     }
 
+    rulesToMemory()
+    {
+        this.serializeMetadataToDisk();
+    }
+
     allChannelMessagesToMemory()
     {
         for(var i of Object.keys(this.textChannels)) {
@@ -290,13 +297,18 @@ class Server
         this.fd = IO.openFile(this.json["serverID"], this.json["serverID"], "r");
         var data = IO.readFromFile(this.fd, "r");
         this.json = JSON.parse(data);
+        
+        for (var i = 0; i < this.json["rules"].length; i++)
+        {
+            this.moderator.addExistingRule(this.json["rules"][i]);
+        }
         this.fd = 0;
     }
 
     serializeMetadataToDisk()
     {
         assert(this.fd == 0);
-        
+        this.json["rules"] = this.moderator.moderationRules;
         this.fd = IO.openFile(this.json["serverID"], this.json["serverID"], "w");
         IO.writeToFile(this.fd, this.json, "w");
         IO.closeFile(this.fd);

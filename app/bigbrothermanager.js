@@ -61,7 +61,7 @@ class BigBrotherManager
             {
                 return;
             }
-
+            
             if (message.content === "")
             {
                 return;
@@ -109,8 +109,8 @@ class BigBrotherManager
         client.on("guildMemberAdd", member => 
         {
             /* Add users to servers list */
-            let thisServer = this.servers.find(server => server.json.serverID == member.guild.id);            
-            thisServer.addUserToList(member.user.username, member.user.id, member.joinedTimestamp);
+            let thisServer = this.servers.find(server => server.json.serverID == member.guild.id);        
+            thisServer.addUserToList(member.user.tag, member.user.id, member.joinedTimestamp);
         });
 
         /*** When a new text channel is added, add it to the approriate server ***/

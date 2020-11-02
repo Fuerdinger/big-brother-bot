@@ -164,6 +164,13 @@ class UI
             //run the function and then backtrack to the last menu
             return this.runFunction(this.currentFunction) + "\n" + this.printMenuOptions();
         }
+        if (this.currentMenuPlace === "getWords")
+        {
+            this.currentWordArg = message.split(";");
+            this.currentMenuPlace = this.previousMenuPlace;
+            //run the function and then backtrack to the last menu
+            return this.runFunction(this.currentFunction) + "\n" + this.printMenuOptions();
+        }
         if (this.currentMenuPlace == "getRuleIndex")
         {
             this.currentIndexArg = parseInt(message);
@@ -332,31 +339,33 @@ class UI
 
             case "removeRule":
                 return this.parentServer.moderator.removeRule(this.currentIndexArg);
-                return ;
                 break;
-            case "moderateKickOneDayForWord":
+            case "moderateWarnForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, -1, 1, "*");
+                break;
+            case "moderateKickForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 0, 1, "*");
+                break;
+            case "moderateKickForWordThreeTimes":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 0, 3, "*");;
+                break;
+            case "moderateBanOneDayForWord":
                 return this.parentServer.moderator.instantiateRule(this.currentWordArg, 1, 1, "*");
-                return ;
                 break;
-            case "moderateKickOneDayForWordThreeTimes":
+            case "moderateBanOneDayForWordThreeTimes":
                 return this.parentServer.moderator.instantiateRule(this.currentWordArg, 1, 3, "*");
-                return ;
                 break;
-            case "moderateKickOneWeekForWord":
+            case "moderateBanOneWeekForWord":
                 return this.parentServer.moderator.instantiateRule(this.currentWordArg, 7, 1, "*");
-                return ;
                 break;
-            case "moderateKickOneWeekForWordThreeTimes":
+            case "moderateBanOneWeekForWordThreeTimes":
                 return this.parentServer.moderator.instantiateRule(this.currentWordArg, 7, 3, "*");
-                return ;
                 break;
             case "moderateBanForWord":
                 return this.parentServer.moderator.instantiateRule(this.currentWordArg, "*", 1, "*");
-                return ;
                 break;
             case "moderateBanForWordThreeTimes":
                 return this.parentServer.moderator.instantiateRule(this.currentWordArg, "*", 3, "*");
-                return ;
                 break;
 
             default:
@@ -370,7 +379,7 @@ class UI
         var separators = [' ', ',', '(', ')', '!bb'];
         var words = message.split(/[(), ]/);
 
-        if (words.length < 2 || words[0] !== "!bb")
+        if (message.includes("!bb help"))
         {
             return mySearcher.help();
         }
@@ -414,6 +423,16 @@ class UI
                     var parts = words[x].split('-');
                     args.push(new Date(parts[0], parts[1] - 1, parts[2])); 
                     break;
+                case "wordArray":
+                    args.push(words[x].split(";"));
+                    break;
+                case "int":
+                    if (isNaN(parseInt(words[x])))
+                    {
+                        return "Invalid number \"" + words[x] + "\".";
+                    }
+                    args.push(parseInt(words[x]));
+                    break;
             }
 
             i++;
@@ -421,20 +440,27 @@ class UI
 
         var ret;
 
-        switch (argTypes.length)
+        if (funcName === "instantiateRule")
         {
-            case 1:
-                ret = mySearcher[funcName](this.parentServer, args[0]);
-                break;
-            case 2:
-                ret = mySearcher[funcName](this.parentServer, args[0], args[1]);
-                break;
-            case 3:
-                ret = mySearcher[funcName](this.parentServer, args[0], args[1], args[2]);
-                break;
-            case 4:
-                ret = mySearcher[funcName](this.parentServer, args[0], args[1], args[2], args[3]);
-                break;
+            ret = this.parentServer.moderator[funcName](args[0], args[1], args[2], args[3]);
+        }
+        else
+        {
+            switch (argTypes.length)
+            {
+                case 1:
+                    ret = mySearcher[funcName](this.parentServer, args[0]);
+                    break;
+                case 2:
+                    ret = mySearcher[funcName](this.parentServer, args[0], args[1]);
+                    break;
+                case 3:
+                    ret = mySearcher[funcName](this.parentServer, args[0], args[1], args[2]);
+                    break;
+                case 4:
+                    ret = mySearcher[funcName](this.parentServer, args[0], args[1], args[2], args[3]);
+                    break;
+            }
         }
 
         return ret;
@@ -450,8 +476,13 @@ class UI
         "postSearchByDayLengthMax": ["user", "channel"],
         "banSearch": ["user"],
         "recentMessages": ["user"],
-        "mostUsedWords": ["user", "channel"]
+        "mostUsedWords": ["user", "channel"],
+        "instantiateRule": ["wordArray", "int", "int", "int"]
     }
+
+    //add rule for "instantiateRule": [bannedWords, punishmentLength, numberOfTimes, resetFrequency]
+    //wordArray, int, int, int
+    //also, do the resetFrequency thing
 
     //all other functions are private
 

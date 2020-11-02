@@ -46,6 +46,15 @@
             ]
         },
 
+        "getWords":
+        {
+            "header": "What are the words? Separate with semicolon (\";\") (ex. apple;orange;pear)",
+            "options":
+            [
+                {"option": "getString"}
+            ]
+        },
+
         "getRuleIndex":
         {
             "header": "Which rule do you want to get rid of? Give its index (ex. \"2\")",
@@ -70,7 +79,7 @@
                 {"option": "What is the average amount of posts in a day?", "run": "serverAverageAmountOfPostsInDay"},
                 {"option": "Show me all messages where this word has been used.", "run": "serverAllMessagesWhereWordBeenUsed", "input": "getWord"},
                 {"option": "Show me the most recent messages.", "run": "serverMostRecentMessages"},
-                {"option": "Quit.", "goto": "0"}
+                {"option": "Exit.", "goto": "0"}
             ]
         },
 
@@ -88,7 +97,7 @@
                 {"option": "How often are posts made in this chat a day?", "run": "channelAveragePostsADay"},
                 {"option": "What is the most amount of posts made in this chat in a single day?", "run": "channelMostAmountOfPostsInADay"},
                 {"option": "Which words are used the most?", "run": "channelMostUsedWords"},
-                {"option": "Quit.", "goto": "0"}
+                {"option": "Exit.", "goto": "0"}
             ]
         },
 
@@ -108,7 +117,7 @@
                 {"option": "Show me all the messages where they've used this word.", "run": "userAllMessagesWhereWordWasUsed", "input": "getWord"},
                 {"option": "Show me their most recent messages.", "run": "userMostRecentMessages"},
                 {"option": "Which words does the user use the most?.", "run": "userMostUsedWords"},
-                {"option": "Quit.", "goto": "0"}
+                {"option": "Exit.", "goto": "0"}
             ]
         },
 
@@ -123,7 +132,7 @@
             [
                 {"option": "Create a new rule.", "goto": "createRuleMenu"},
                 {"option": "Remove a rule.", "run": "removeRule", "input": "getRuleIndex"},
-                {"option": "Quit.", "goto": "0"}
+                {"option": "Exit.", "goto": "0"}
             ]
         },
 
@@ -132,13 +141,16 @@
             "header": "Which kind of rule do you want to create?",
             "options":
             [
-                {"option": "Kick users for 1 day if they use this word.", "run": "moderateKickOneDayForWord", "input": "getWord"},
-                {"option": "Kick users for 1 day if they use this word 3 times.", "run": "moderateKickOneDayForWordThreeTimes", "input": "getWord"},
-                {"option": "Kick users for 1 week if they use this word.", "run": "moderateKickOneWeekForWord", "input": "getWord"},
-                {"option": "Kick users for 1 week if they use this word 3 times.", "run": "moderateKickOneWeekForWordThreeTimes", "input": "getWord"},
-                {"option": "Ban users if they use this word.", "run": "moderateBanForWord", "input": "getWord"},
-                {"option": "Ban users if they use this word 3 times.", "run": "moderateBanForWordThreeTimes", "input": "getWord"},
-                {"option": "Quit.", "goto": "moderateMenu"}
+                {"option": "Warn users if they use certain words.", "run": "moderateWarnForWord", "input": "getWords"},
+                {"option": "Kick users if they use certain words.", "run": "moderateKickForWord", "input": "getWords"},
+                {"option": "Kick users if they use certain words 3 times.", "run": "moderateKickForWordThreeTimes", "input": "getWords"},
+                {"option": "Ban users for 1 day if they use certain words.", "run": "moderateBanOneDayForWord", "input": "getWords"},
+                {"option": "Ban users for 1 day if they use certain words 3 times.", "run": "moderateBanOneDayForWordThreeTimes", "input": "getWords"},
+                {"option": "Ban users for 1 week if they use certain words.", "run": "moderateBanOneWeekForWord", "input": "getWords"},
+                {"option": "Ban users for 1 week if they use certain words 3 times.", "run": "moderateBanOneWeekForWordThreeTimes", "input": "getWords"},
+                {"option": "Ban users indefinitely if they use certain words.", "run": "moderateBanForWord", "input": "getWords"},
+                {"option": "Ban users indefinitely if they use certain words 3 times.", "run": "moderateBanForWordThreeTimes", "input": "getWords"},
+                {"option": "Exit.", "goto": "moderateMenu"}
             ]
         }
     }

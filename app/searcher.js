@@ -43,13 +43,20 @@ class Searcher
 
     !bb mostUsedWords(user, channel)
         displays the most used words in the server
+
+    !bb instantiateRule(bannedWords, punishmentLength, numberOfTimes, resetFrequency)
+        creates a new server rule
+        bannedWords should be semicolon separated
+        punishmentLength should be an integer representing days (-1 for warning, 0 for kick, * for permanent ban)
+        numberOfTimes is how many times the word(s) must be said to incur punishment
+        resetFrequency is how often the strike system resets (* for never resets)    
         `;
 
     constructor() {}
 
     help()
     {
-        return helpComment;
+        return this.helpComment;
     }
     //<this lists out all the different commands>
 

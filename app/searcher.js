@@ -89,7 +89,7 @@ class Searcher
     {
         var userDict = this.filterByUC(server, user, channel);
         userDict = this.postSearchByDayDict(userDict, day);
-        return "Messages containing \"" + word + "\"" +
+        return "Messages" +
                     " from " + this.resolveUserName(user) + 
                     " in " + this.resolveChannelName(channel) + 
                     " on " + day.toString() + "\n\n" + 
@@ -497,7 +497,7 @@ class Searcher
             for(var i = 0; i < userMessages.length; i++)
             {
                 //remove messages not posted on day of date
-                if(userMessages[i]["message"]["timePosted"].toDateString() !== dateString)
+                if(userMessages[i]["timePosted"].toDateString() !== dateString)
                 {
                     userDict[userI].json["messages"].splice(i, 1);
                 }

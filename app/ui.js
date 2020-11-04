@@ -321,9 +321,6 @@ class UI
             case "userHowOftenPostInADay":
                 return mySearcher.postSearchByDayLengthAverage(this.parentServer, this.currentUser, "*");
                 break;
-            case "userHowManyTimesBannedFromServer":
-                return mySearcher.banSearch(this.parentServer, this.currentUser);
-                break;
             case "userMostAmountOfPostsInADay":
                 return mySearcher.postSearchByDayLengthMax(this.parentServer, this.currentUser, "*");
                 break;

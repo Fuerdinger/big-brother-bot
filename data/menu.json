@@ -112,7 +112,6 @@
             [
                 {"option": "How many times have they used this word?", "run": "userHowManyTimesWordUsed", "input": "getWord"},
                 {"option": "How often do they post in a day?", "run": "userHowOftenPostInADay"},
-                {"option": "How many times have they been banned from the server?", "run": "userHowManyTimesBannedFromServer"},
                 {"option": "What is the most amount of posts they've made in a single day?", "run": "userMostAmountOfPostsInADay"},
                 {"option": "Show me all the messages where they've used this word.", "run": "userAllMessagesWhereWordWasUsed", "input": "getWord"},
                 {"option": "Show me their most recent messages.", "run": "userMostRecentMessages"},

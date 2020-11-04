@@ -39,7 +39,7 @@ class Server
         var values = Object.values(this.textChannels);
         for (var i = 0; i < values.length; i++)
         {
-            ret += values[0].json.messages.length;
+            ret += values[i].json.messages.length;
         }
 
         return ret;

@@ -300,10 +300,10 @@ class UI
                 break;
             
             case "channelHowManyTimesWordUsed":
-                return mySearcher.wordSearchLength(this.parentServer, this.currentChannel, "*", this.currentWordArg);
+                return mySearcher.wordSearchLength(this.parentServer, "*", this.currentChannel, this.currentWordArg);
                 break;
             case "channelAllMessagesWhereWordBeenUsed":
-                return mySearcher.wordSearch(this.parentServer, this.currentChannel, "*", this.currentWordArg);
+                return mySearcher.wordSearch(this.parentServer, "*", this.currentChannel, this.currentWordArg);
                 break;
             case "channelAveragePostsADay":
                 return mySearcher.postSearchByDayLengthAverage(this.parentServer, "*", this.currentChannel);

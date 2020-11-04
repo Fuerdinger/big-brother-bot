@@ -68,7 +68,7 @@ class Searcher
         return "Messages containing \"" + word + "\"" +
                      " from " + this.resolveUserName(user) + 
                      " in " + this.resolveChannelName(channel) + ":\n" + 
-                     this.formatMessages(userDict);
+                     this.formatMessages(server, userDict);
     }
     //would print out all messages made by a user in a particular channel where they used a certain word
     //you can pass in an * for user and channel to specify that you want to see all users and all channels
@@ -85,13 +85,6 @@ class Searcher
     }
     //do the same thing as above, but instead of printing out the messages, prints out the number of messages
 
-    //format ddmmyyyy
-
-
-
-
-
-    //WRONG
     postSearchByDay(server, user, channel, day)
     {
         var userDict = this.filterByUC(server, user, channel);
@@ -100,7 +93,7 @@ class Searcher
                     " from " + this.resolveUserName(user) + 
                     " in " + this.resolveChannelName(channel) + 
                     " on " + day.toString() + "\n\n" + 
-                    this.formatMessages(userDict);
+                    this.formatMessages(server, userDict);
     }
     //print out all the posts made by a user in a particular channel in a certain day
 
@@ -150,7 +143,7 @@ class Searcher
         for(var i = 0; i < Math.min(numberOfMessagesToDisplay, sortedMessages.length); i++)
         {
             retStr += "#" + (i + 1) + "\nMessage: " + sortedMessages[i]["message"] + 
-                        "\nTime posted: " + sortedMessages[i]["timePosted"] + 
+                        "\nTime posted: " + sortedMessages[i]["timePosted"].toString() + 
                         "\nChannel: " + server.getChannelName(sortedMessages[i]["channelID"]) + "\n\n";
         }
 
@@ -166,11 +159,11 @@ class Searcher
         var retStr = "Most used words from " + this.resolveUserName(user) + 
                         " in " + this.resolveChannelName(channel) +
                         ": \n";
-        console.log(mostUsedWordsLists[0].length);
+
         for(var i = 0; i < mostUsedWordsLists[0].length; i++)
         {
             retStr += "#" + (i + 1) + "\nWord: " + mostUsedWordsLists[0][i] +
-                        "\nTimes used: " + mostUsedWordsLists[1][i] + "\n";
+                        "\nTimes used: " + mostUsedWordsLists[1][i] + "\n\n";
         }
 
         return retStr + "\n";
@@ -210,8 +203,6 @@ class Searcher
             userDict[user] = user;
         }
 
-        userDict = this.convertToDateClass(userDict);
-
         return userDict;
     }
 
@@ -227,8 +218,6 @@ class Searcher
         {
             channelDict[channel] = channel;
         }
-
-        channelDict = this.convertToDateClass(channelDict);
 
         return channelDict;
     }
@@ -259,9 +248,10 @@ class Searcher
 
     //formats all posts from user dictionary
     //posts are added in order of users, not by time posted (can be changed in the future)
-    formatMessages(userDict)
+    formatMessages(server, userDict)
     {
         var formattedString = "";
+        var count = 0;
 
         for(var userI of Object.keys(userDict))
         {
@@ -272,9 +262,15 @@ class Searcher
                     "#" + (i + 1) + "\n" + 
                     "User: " + user.userName + "\n" +
                     "Message: " + user.json["messages"][i]["message"] + "\n" +
-                    "Channel: " + user.json["messages"][i]["channelID"] + "\n" +
-                    "Time Posted: " + user.json["messages"][i]["timePosted"] + "\n\n";
+                    "Channel: " + server.getChannelName(user.json["messages"][i]["channelID"]) + "\n" +
+                    "Time Posted: " + user.json["messages"][i]["timePosted"].toString() + "\n";
+                count += 1;
             }
+        }
+
+        if(count == 0)
+        {
+            formattedString = "None\n";
         }
 
         return formattedString;
@@ -338,17 +334,22 @@ class Searcher
         //add all user's word count into wordDict
         for(var userI of Object.keys(userDict))
         {
-            var userWordDict = userDict[userI].json["words"];
+            var messages = userDict[userI].json["messages"];
 
-            for(var wordI of Object.keys(userWordDict))
+            for(var messageI of Object.keys(messages))
             {
-                if(wordDict.hasOwnProperty(wordI))
+                var words = messages[messageI]["message"].split(" ");
+
+                for(var i = 0; i < words.length; i++)
                 {
-                    wordDict[wordI] += userWordDict[wordI];
-                }
-                else
-                {
-                    wordDict[wordI] = userWordDict[wordI];
+                    if(wordDict.hasOwnProperty(words[i]))
+                    {
+                        wordDict[words[i]] += 1;
+                    }
+                    else
+                    {
+                        wordDict[words[i]] = 1;
+                    }
                 }
             }
         }
@@ -454,27 +455,24 @@ class Searcher
     }
 
     //filters a dictionary by word
-    //bad implementation, can use substrings of word
     wordSearchDict(userDictOrig, word)
     {
-        var userDict = JSON.parse(JSON.stringify(userDictOrig));
-        var count = 0;
-        
+        var userDict = this.getCopy(userDictOrig); //gets copy to prevent changing original dict data
 
         for(var userI of Object.keys(userDict))
         {
             //search through all messages for each user
             var userMessages = userDict[userI].json["messages"];
-
             var i = 0;
             while(i < userMessages.length)
             {
                 //remove messages without word
                 //      !!!!!currently does not check for lower/uppercase!!!!!
-                if(!userMessages[i]["message"].includes(word))
+                var words = userMessages[i]["message"].split(" ");
+
+                if(!words.includes(word))
                 {
                     userMessages.splice(i, 1);
-                    count++;
                 }
                 else
                 {
@@ -490,7 +488,7 @@ class Searcher
     //note date is a Date object
     postSearchByDayDict(userDict, date)
     {
-        var dateString = date.toString();
+        var dateString = date.toDateString();
 
         for(var userI of Object.keys(userDict))
         {
@@ -499,7 +497,7 @@ class Searcher
             for(var i = 0; i < userMessages.length; i++)
             {
                 //remove messages not posted on day of date
-                if(userMessages[i]["message"]["timePosted"].toString() !== dateString)
+                if(userMessages[i]["message"]["timePosted"].toDateString() !== dateString)
                 {
                     userDict[userI].json["messages"].splice(i, 1);
                 }
@@ -509,10 +507,18 @@ class Searcher
         return userDict;
     }
 
+    //obtains copy of the dictionary
+    getCopy(userDict)
+    {
+        return this.convertToDateClass(JSON.parse(JSON.stringify(userDict)));
+
+    }
+
     //finds all relevant messages based on restrictions described by user and channel
     filterByUC(server, user, channel)
     {
-        var userDict = this.obtainUserInfo(server, user);
+        console.log("processing");
+        var userDict = this.getCopy(this.obtainUserInfo(server, user));
 
         if(channel !== this.nullString)
         {
@@ -520,17 +526,21 @@ class Searcher
             {
                 //search through all messages for each user
                 var userMessages = userDict[userI].json["messages"];
-                for(var i = 0; i < userMessages.length; i++)
+                var i = 0;
+                while(i < userMessages.length)
                 {
-                    //remove messages not posted in channel
+                    //remove messages not posted in channel["channelID"]);
                     if(channel.channelID !== userMessages[i]["channelID"])
                     {
                         userDict[userI].json["messages"].splice(i, 1);
                     }
+                    else
+                    {
+                        i++;
+                    }
                 }
             }
         }
-
         return userDict;
     }
 }

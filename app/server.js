@@ -31,7 +31,7 @@ class Server
     cacheCounter = 0;
 
     getServerName(){return this.json.serverName;}
-    getTimeBotWasAdded(){return this.json.timeBotWasAdded;}
+    getTimeBotWasAdded(){return new Date(this.json.timeBotWasAdded);}
     getNumMessagesInServer()
     {
         var ret = 0;

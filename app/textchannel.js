@@ -21,7 +21,7 @@ class TextChannel
     getServerName(){return this.serverName;}
     getChannelName(){return this.channelName;}
     getChannelID(){return this.channelID;}
-    getChannelCreationTime(){return this.channelCreationTime;}
+    getChannelCreationTime(){return new Date(this.channelCreationTime);}
     getMessagesInChannel(){return this.json.messages.length;}
 
     json = {};

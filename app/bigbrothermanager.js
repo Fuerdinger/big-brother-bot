@@ -97,12 +97,7 @@ class BigBrotherManager
         /*** When a new server is deleted, remove from servers[] ***/
         client.on('guildDelete', guild => 
         {
-            let server = new srv.Server(guild.name, guild.id);
-            for (let i = 0; i < this.servers.length; i++) {
-                if (server.id = guild.id) {
-                    this.servers.splice(i, 1);
-                }
-            }
+            //do nothing because we want to keep their data
         });        
 
         /*** When a new member is added, add it to the server ***/

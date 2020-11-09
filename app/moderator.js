@@ -242,7 +242,7 @@ class Moderator
                 if (message.member.bannable == true && !message.member.hasPermission(4)) //4 is for BAN_MEMBERS
                 {
                     message.member.ban({"reason": ruleString});
-                    setTimeout(() => {this.unbanMember(message.guild, message.member);}, rule.punishmentLength * 24 * 60 * 60 * 1000);
+                    setTimeout(() => {this.unbanMember(message.guild, message.member.id);}, rule.punishmentLength * 24 * 60 * 60 * 1000);
                 }
                 else
                 {

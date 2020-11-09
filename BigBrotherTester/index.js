@@ -8,8 +8,16 @@ let caseIndex = 1;
 client.once('ready', () => {
     // https://discord.com/oauth2/authorize?client_id=772522133510553600&scope=bot
     console.log('Ready!');
-    var channel = (client.channels.cache).get('775081447723630596');
-    useCases(channel);
+    //var channel = (client.channels.cache).get('775081447723630596');
+    var channel = null;
+    client.on('message', message =>
+    {
+        if (channel == null && message.content === "RunTestHere")
+        {
+            channel = message.channel;
+            useCases(channel);
+        }
+    })
 });
 function sendMessage(channel, message) {
 	return new Promise(resolve => {

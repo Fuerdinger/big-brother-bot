@@ -35,6 +35,9 @@ class UI
     //this is a temp array for holding multiple users (or channels) if the user picked a username/channelName shared by multiple channels
     currentArrayOptions = [];
 
+    //a function can look at this var to see what integer it should be searching for
+    currentIndexArg = 0;
+
     //the current function being used; this is set if a function can't be called immediately,
     //and requires an arg
     currentFunction = "";
@@ -58,8 +61,13 @@ class UI
 
         if (this.currentMenuPlace === "-1")
         {
-            this.currentMenuPlace = "0";
-            return this.printMenuOptions();
+            if (message === "!bb")
+            {
+                this.currentMenuPlace = "0";
+                return this.printMenuOptions();
+            }
+
+            return this.runComplexCommand(message);
         }
 
         //if this is getUser or getChannel, then the inputted message must have been a user name/channel name
@@ -156,6 +164,23 @@ class UI
             //run the function and then backtrack to the last menu
             return this.runFunction(this.currentFunction) + "\n" + this.printMenuOptions();
         }
+        if (this.currentMenuPlace === "getWords")
+        {
+            this.currentWordArg = message.split(";");
+            this.currentMenuPlace = this.previousMenuPlace;
+            //run the function and then backtrack to the last menu
+            return this.runFunction(this.currentFunction) + "\n" + this.printMenuOptions();
+        }
+        if (this.currentMenuPlace == "getRuleIndex")
+        {
+            this.currentIndexArg = parseInt(message);
+            this.currentMenuPlace = this.previousMenuPlace;
+
+            if (isNaN(this.currentIndexArg)) return "Not a number, try again.";
+            this.currentIndexArg--;
+            //run the function and then backtrack to the last menu
+            return this.runFunction(this.currentFunction) + "\n" + this.printMenuOptions();
+        }
 
         //in this case, the user entered a number
         var options = menuScript[this.currentMenuPlace]["options"];
@@ -220,6 +245,9 @@ class UI
                 case "userMenu":
                     regexObj = this.currentUser;
                     break;
+                case "moderateMenu":
+                    regexObj = this.parentServer.moderator;
+                    break;
                 default:
                     return "Error";
             }
@@ -272,10 +300,10 @@ class UI
                 break;
             
             case "channelHowManyTimesWordUsed":
-                return mySearcher.wordSearchLength(this.parentServer, this.currentChannel, "*", this.currentWordArg);
+                return mySearcher.wordSearchLength(this.parentServer, "*", this.currentChannel, this.currentWordArg);
                 break;
             case "channelAllMessagesWhereWordBeenUsed":
-                return mySearcher.wordSearch(this.parentServer, this.currentChannel, "*", this.currentWordArg);
+                return mySearcher.wordSearch(this.parentServer, "*", this.currentChannel, this.currentWordArg);
                 break;
             case "channelAveragePostsADay":
                 return mySearcher.postSearchByDayLengthAverage(this.parentServer, "*", this.currentChannel);
@@ -293,9 +321,6 @@ class UI
             case "userHowOftenPostInADay":
                 return mySearcher.postSearchByDayLengthAverage(this.parentServer, this.currentUser, "*");
                 break;
-            case "userHowManyTimesBannedFromServer":
-                return mySearcher.banSearch(this.parentServer, this.currentUser);
-                break;
             case "userMostAmountOfPostsInADay":
                 return mySearcher.postSearchByDayLengthMax(this.parentServer, this.currentUser, "*");
                 break;
@@ -309,11 +334,152 @@ class UI
                 return mySearcher.mostUsedWords(this.parentServer, this.currentUser, "*");
                 break;
 
+            case "removeRule":
+                return this.parentServer.moderator.removeRule(this.currentIndexArg);
+                break;
+            case "moderateWarnForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, -1, 1, "*");
+                break;
+            case "moderateKickForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 0, 1, "*");
+                break;
+            case "moderateKickForWordThreeTimes":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 0, 3, "*");;
+                break;
+            case "moderateBanOneDayForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 1, 1, "*");
+                break;
+            case "moderateBanOneDayForWordThreeTimes":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 1, 3, "*");
+                break;
+            case "moderateBanOneWeekForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 7, 1, "*");
+                break;
+            case "moderateBanOneWeekForWordThreeTimes":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, 7, 3, "*");
+                break;
+            case "moderateBanForWord":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, "*", 1, "*");
+                break;
+            case "moderateBanForWordThreeTimes":
+                return this.parentServer.moderator.instantiateRule(this.currentWordArg, "*", 3, "*");
+                break;
+
             default:
                 ret = "error in the menu.json file";
         }
         return ret;
     }
+
+    runComplexCommand(message)
+    {
+        var separators = [' ', ',', '(', ')', '!bb'];
+        var words = message.split(/[(), ]/);
+
+        if (message.includes("!bb help"))
+        {
+            return mySearcher.help();
+        }
+
+        var funcName = words[1];
+        if (!(this.complexMap.hasOwnProperty(funcName)))
+        {
+            return "Not a valid function name. Type \"!bb help\" to see all functions.";
+        }
+
+        var argTypes = this.complexMap[funcName];
+        var args = [];
+
+        var i = 0;
+        for (var x = 2; x < words.length; x++)
+        {
+            if (words[x].length == 0) continue;
+
+            if (words[x] === "*")
+            {
+               args.push("*");
+               continue;
+            }
+
+            switch (argTypes[i])
+            {
+                case "user":
+                    var users = this.parentServer.getUserFromUsername(words[x]);
+                    if (users.length == 0) return "Invalid user.";
+                    args.push(users[0]);
+                    break;
+                case "channel":
+                    var channels = this.parentServer.getChannelFromChannelName(words[x]);
+                    if (channels.length == 0) return "Invalid channel.";
+                    args.push(channels[0]);
+                    break;
+                case "word":
+                    args.push(words[x]);
+                    break;
+                case "day":
+                    var parts = words[x].split('-');
+                    args.push(new Date(parts[0], parts[1] - 1, parts[2])); 
+                    break;
+                case "wordArray":
+                    args.push(words[x].split(";"));
+                    break;
+                case "int":
+                    if (isNaN(parseInt(words[x])))
+                    {
+                        return "Invalid number \"" + words[x] + "\".";
+                    }
+                    args.push(parseInt(words[x]));
+                    break;
+            }
+
+            i++;
+        }
+
+        var ret;
+
+        if (funcName === "instantiateRule")
+        {
+            ret = this.parentServer.moderator[funcName](args[0], args[1], args[2], args[3]);
+        }
+        else
+        {
+            switch (argTypes.length)
+            {
+                case 1:
+                    ret = mySearcher[funcName](this.parentServer, args[0]);
+                    break;
+                case 2:
+                    ret = mySearcher[funcName](this.parentServer, args[0], args[1]);
+                    break;
+                case 3:
+                    ret = mySearcher[funcName](this.parentServer, args[0], args[1], args[2]);
+                    break;
+                case 4:
+                    ret = mySearcher[funcName](this.parentServer, args[0], args[1], args[2], args[3]);
+                    break;
+            }
+        }
+
+        return ret;
+    }
+
+    complexMap = 
+    {
+        "wordSearch": ["user", "channel", "word"],
+        "wordSearchLength": ["user", "channel", "word"],
+        "postSearchByDay": ["user", "channel", "day"],
+        "postSearchByDayLength": ["user", "channel", "day"],
+        "postSearchByDayLengthAverage": ["user", "channel"],
+        "postSearchByDayLengthMax": ["user", "channel"],
+        "banSearch": ["user"],
+        "recentMessages": ["user"],
+        "mostUsedWords": ["user", "channel"],
+        "instantiateRule": ["wordArray", "int", "int", "int"]
+    }
+
+    //add rule for "instantiateRule": [bannedWords, punishmentLength, numberOfTimes, resetFrequency]
+    //wordArray, int, int, int
+    //also, do the resetFrequency thing
 
     //all other functions are private
 

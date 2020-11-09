@@ -20,7 +20,7 @@ class User
     getServerName(){return this.serverName;}
     getUserName(){return this.userName;}
     getUserID(){return this.userID;}
-    getUserJoinTime(){return this.userJoinTime;}
+    getUserJoinTime(){return new Date(this.userJoinTime);}
     getNumMessagesTotal(){return this.json.messages.length;}
 
     //the memory representation of the json file

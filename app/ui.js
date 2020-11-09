@@ -471,7 +471,6 @@ class UI
         "postSearchByDayLength": ["user", "channel", "day"],
         "postSearchByDayLengthAverage": ["user", "channel"],
         "postSearchByDayLengthMax": ["user", "channel"],
-        "banSearch": ["user"],
         "recentMessages": ["user"],
         "mostUsedWords": ["user", "channel"],
         "instantiateRule": ["wordArray", "int", "int", "int"]

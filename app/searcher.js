@@ -29,8 +29,6 @@ class Searcher
         displays the average number of messages since server creation
     !bb postSearchByDayLengthMax(user, channel)
         displays the largest number of messages in a single day
-    !bb banSearch(user)
-        displays information related to user bans
     !bb recentMessages(user)
         displays the most recent messages from a user
     !bb mostUsedWords(user, channel)

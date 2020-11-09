@@ -11,7 +11,6 @@ class Searcher
     helpComment =  
     `!bb
         simple menu with basic searching
-
     note: for the below functions, user/channel restrict searching to that
           user/channel; passing '*' will search all users/channels
           
@@ -20,30 +19,22 @@ class Searcher
         
     !bb wordSearchLength(user, channel, word)
         displays the number of times a word has occurred
-
     !bb postSearchByDay(user, channel, day)
         displays all messages that occurred in a specific day
         format: ddmmyyyy
-
     !bb postSearchByDayLength(user, channel, day)
         displays the number of messages that occurred in a specific day
         format: ddmmyyyy
-
     !bb postSearchByDayLengthAverage(user, channel)
         displays the average number of messages since server creation
-
     !bb postSearchByDayLengthMax(user, channel)
         displays the largest number of messages in a single day
-
     !bb banSearch(user)
         displays information related to user bans
-
     !bb recentMessages(user)
         displays the most recent messages from a user
-
     !bb mostUsedWords(user, channel)
         displays the most used words in the server
-
     !bb instantiateRule(bannedWords, punishmentLength, numberOfTimes, resetFrequency)
         creates a new server rule
         bannedWords should be semicolon separated

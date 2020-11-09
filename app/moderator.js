@@ -176,7 +176,6 @@ class Moderator
         if (this.moderationRules.length == 0) return "No rule counters to reset.";
         if (isNaN(ruleIndex)) return "Not a number, try again.";
         if (ruleIndex < 0 || ruleIndex >= this.moderationRules.length) return "Invalid rule number.";
-
         for (var i = 0; i < this.moderationRules[ruleIndex].counterMap.)
         this.moderationRules[ruleIndex].counter = 0;
         return "Counter reset.";

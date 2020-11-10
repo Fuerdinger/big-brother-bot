@@ -37,7 +37,7 @@ message.content = "test message";
 message.guild = guild;
 
 var fs = require('fs');
-var data = JSON.parse(fs.readFileSync('./data/bigbrother.json', 'utf8'));
+var data = JSON.parse(fs.readFileSync('./testservers/bigbrother.json', 'utf8'));
 var serverstr = data.map(s => s);
 servers = [];
 for (var i = 0; i < serverstr.length; i++) {

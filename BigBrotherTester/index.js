@@ -7,10 +7,16 @@ let caseIndex = 1;
 
 client.once('ready', () => {
     console.log('Ready!');
-    var channel = client.channels.cache.find(channel => channel.name === 'general' && channel.type === 'text');
-    console.log(channel.guild);
-    useCases(channel);
 });
+
+client.on('message', message => {
+    if (message.content === '!Run BigBrotherTester') {
+        // var channel = client.channels.cache.find(channel => channel.name === 'general' && channel.type === 'text');
+        // console.log(channel.guild);
+        useCases(message.channel);
+    }
+})
+
 function sendMessage(channel, message) {
 	return new Promise(resolve => {
         channel.send(message);
@@ -32,7 +38,7 @@ var useCase2 = ['!bb', '1', 'Big Brother Tester#1288', '7', '5'];
 let useCaseResult2 = [];
 useCaseResult2.push(`What do you want to do?`);
 useCaseResult2.push("What is the user's username? (ex. JohnDoe#5231)");
-useCaseResult2.push("Username:");
+useCaseResult2.push("Username: Big Brother Tester#1288");
 useCaseResult2.push(`What do you want to do?`);
 useCaseResult2.push('Thank you.');
 
@@ -41,10 +47,10 @@ var useCase3 = ['!bb', '1', 'Big Brother Tester#1288', '4', 'hi', '7', '5'];
 let useCaseResult3 = [];
 useCaseResult3.push(`What do you want to do?`);
 useCaseResult3.push("What is the user's username? (ex. JohnDoe#5231)");
-useCaseResult3.push(`Username: phungngo1020#2170
+useCaseResult3.push(`Username: Big Brother Tester#1288
 Number of messages they've made:`);
 useCaseResult3.push("What's the word?");
-useCaseResult3.push(`Messages containing "hi" from phungngo1020#2170 in all channels:`);
+useCaseResult3.push(`Messages containing "hi" from Big Brother Tester#1288 in all channels:`);
 useCaseResult3.push(`What do you want to do?`);
 useCaseResult3.push('Thank you.');
 
@@ -68,7 +74,7 @@ function useCases(channel) {
         if (author.id == '754512408633933875') {
             if (caseIndex == 1) {
                 if(data.includes(useCaseResult1[index1])) {
-                    console.log(index1 + ' correct!');
+                    console.log(index1 + ' correct');
                 }
                 index1++;
             }

@@ -155,7 +155,7 @@ class Searcher
                         "\nTimes used: " + mostUsedWordsLists[1][i] + "\n\n";
         }
 
-        return retStr + "\n";
+        return retStr;
     }
     //prints out the most used words by a user for a channel
     //* can be passed in for user and channel
@@ -252,7 +252,7 @@ class Searcher
                     "User: " + user.userName + "\n" +
                     "Message: " + user.json["messages"][i]["message"] + "\n" +
                     "Channel: " + server.getChannelName(user.json["messages"][i]["channelID"]) + "\n" +
-                    "Time Posted: " + user.json["messages"][i]["timePosted"].toString() + "\n";
+                    "Time Posted: " + user.json["messages"][i]["timePosted"].toString() + "\n\n";
                 count += 1;
             }
         }

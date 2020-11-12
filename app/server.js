@@ -117,7 +117,16 @@ class Server
         //checks whether the message contains a prefix for a command or user is currently in menu
         if(message.content.startsWith("!bb") || this.ui.isInMenu())
         {
-            return this.ui.passInMessage(message.member.user.id, this.getChannel(message.channel.id), message.content.trim())
+            var msg = this.ui.passInMessage(message.member.user.id, this.getChannel(message.channel.id), message.content.trim());
+
+            if (msg.length >= 2000)
+            {
+                return "Response message was too long\n\n" + this.ui.printMenuOptions();
+            }
+            else
+            {
+                return msg;
+            }
         }
         else
         {

@@ -398,6 +398,7 @@ class UI
             if (words[x] === "*")
             {
                args.push("*");
+               i++;
                continue;
             }
 

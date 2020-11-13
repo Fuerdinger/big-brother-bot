@@ -81,7 +81,7 @@ class Searcher
         return "Messages" +
                     " from " + this.resolveUserName(user) + 
                     " in " + this.resolveChannelName(channel) + 
-                    " on " + day.toString() + "\n\n" + 
+                    " on " + day.toDateString() + "\n\n" + 
                     this.formatMessages(server, userDict);
     }
     //print out all the posts made by a user in a particular channel in a certain day
@@ -489,6 +489,7 @@ class Searcher
                 if(userMessages[i]["timePosted"].toDateString() !== dateString)
                 {
                     userDict[userI].json["messages"].splice(i, 1);
+                    i--;
                 }
             }
         }

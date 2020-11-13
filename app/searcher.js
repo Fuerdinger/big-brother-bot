@@ -56,6 +56,7 @@ class Searcher
 
     wordSearch(server, user, channel, word)
     {
+        if (word === "*") return "Invalid argument for word.";
         var userDict = this.filterByUC(server, user, channel);
         userDict = this.wordSearchDict(userDict, word);
 
@@ -69,6 +70,7 @@ class Searcher
 
     wordSearchLength(server, user, channel, word)
     {
+        if (word === "*") return "Invalid argument for word.";
         var userDict = this.filterByUC(server, user, channel);
         userDict = this.wordSearchDict(userDict, word);
 
@@ -81,6 +83,7 @@ class Searcher
 
     postSearchByDay(server, user, channel, day)
     {
+        if (day === "*") return "Invalid argument for day.";
         var userDict = this.filterByUC(server, user, channel);
         userDict = this.postSearchByDayDict(userDict, day);
         return "Messages" +
@@ -93,6 +96,7 @@ class Searcher
 
     postSearchByDayLength(server, user, channel, day)
     {
+        if (day === "*") return "Invalid argument for day.";
         var userDict = this.filterByUC(server, user, channel);
         userDict = this.postSearchByDayDict(userDict, day);
         

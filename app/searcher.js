@@ -11,8 +11,13 @@ class Searcher
     helpComment =  
     `!bb
         simple menu with basic searching
+
     note: for the below functions, user/channel restrict searching to that
           user/channel; passing '*' will search all users/channels
+
+    user: the user's name(case sensitive) and number tag ex. ("User#1234)
+
+    channel: the channel name(case sensitive) ex. (general)
           
     !bb wordSearch(user, channel, word)
         displays all messages that have the word
@@ -21,10 +26,10 @@ class Searcher
         displays the number of times a word has occurred
     !bb postSearchByDay(user, channel, day)
         displays all messages that occurred in a specific day
-        format: ddmmyyyy
+        format: yyyy-mm-dd
     !bb postSearchByDayLength(user, channel, day)
         displays the number of messages that occurred in a specific day
-        format: ddmmyyyy
+        format: yyyy-mm-dd
     !bb postSearchByDayLengthAverage(user, channel)
         displays the average number of messages since server creation
     !bb postSearchByDayLengthMax(user, channel)
